@@ -39,7 +39,7 @@ namespace AsyncAsDesigned.PerfAppServer
                     listenToDataServer.TokenReceivedEventAsync += (t2) =>
                     {
                         UpdateStatus(t, "C");
-                        NamedPipeClient.SendAsync(t.AppServerToClient, t).Wait();
+                        NamedPipeClient.SendAsync(t2.AppServerToClient, t).Wait();
                         return Task.CompletedTask;
                     };
 
@@ -79,8 +79,8 @@ namespace AsyncAsDesigned.PerfAppServer
 
                     listenToDataServer.TokenReceivedEventAsync += async (t2) =>
                     {
-                        UpdateStatus(t, "C");
-                        await NamedPipeClient.SendAsync(t.AppServerToClient, t);
+                        UpdateStatus(t2, "C");
+                        await NamedPipeClient.SendAsync(t2.AppServerToClient, t);
                     };
 
                     await NamedPipeClient.SendAsync(NamedPipeClient.DataServerListenPipe, t);
@@ -133,14 +133,29 @@ namespace AsyncAsDesigned.PerfAppServer
                             Console.BackgroundColor = ConsoleColor.Yellow;
                             break;
                         case "T":
+                            Console.BackgroundColor = ConsoleColor.Gray;
+                            break;
+                        case "C":
+                            Console.BackgroundColor = ConsoleColor.Blue;
+                            break;
+                        case "F":
                             Console.BackgroundColor = ConsoleColor.Green;
                             break;
                         default:
                             Console.BackgroundColor = ConsoleColor.Black;
                             break;
                     }
-                    Console.Write(x);
+
+                    if(i == t.UniqueID)
+                    {
+                        Console.Write(x);
+                    } else
+                    {
+                        Console.Write(" ");
+                    }
+
                 }
+
 
                 Console.BackgroundColor = ConsoleColor.Black;
 

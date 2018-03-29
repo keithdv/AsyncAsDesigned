@@ -32,11 +32,13 @@ namespace AsyncAsDesigned.PerfLib
 
         private async Task Listen(bool oneMessage = false)
         {
+            Token token = null;
+
             using (var pipeServer = new NamedPipeServerStream(pipeName, PipeDirection.In, NamedPipeServerStream.MaxAllowedServerInstances, PipeTransmissionMode.Byte, PipeOptions.Asynchronous))
             {
                 lock (lockCancel)
                 {
-                    if(closed) { return; } // Comment this out, run all tests, SendReceiveMultiple blocks. 
+                    if (closed) { return; } // Comment this out, run all tests, SendReceiveMultiple blocks. 
                     cancelWaitForConnection = new CancellationTokenSource();
                 }
 
@@ -53,13 +55,16 @@ namespace AsyncAsDesigned.PerfLib
 
                 if (!closed)
                 {
-                    var token = Received(pipeServer);
-
-                    await (TokenReceivedEventAsync?.Invoke(token) ?? Task.CompletedTask).ConfigureAwait(false);
-
-                    pipeServer.Close();
+                    token = Received(pipeServer);
                 }
 
+                pipeServer.Close();
+
+            }
+
+            if (token != null)
+            {
+                await (TokenReceivedEventAsync?.Invoke(token) ?? Task.CompletedTask).ConfigureAwait(false);
             }
 
             if (!oneMessage && !closed) { await Listen().ConfigureAwait(false); } // Recursive loop unless we only want to receive one message

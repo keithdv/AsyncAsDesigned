@@ -40,6 +40,7 @@ namespace AsyncAsDesigned.PerfClient
 
                 UpdateStatus(token, "S");
 
+                // Question: Why isn't the client responding quicker??
                 sendTasks.Add(Task.Run(async () =>
                 {
 
