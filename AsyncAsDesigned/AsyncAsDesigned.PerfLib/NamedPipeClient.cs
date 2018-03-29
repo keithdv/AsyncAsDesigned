@@ -23,7 +23,7 @@ namespace AsyncAsDesigned.PerfLib
 
                 await pipeClient.ConnectAsync().ConfigureAwait(false);
 
-                SendToken(pipeClient, token);
+                await SendToken(pipeClient, token).ConfigureAwait(false);
 
                 pipeClient.Flush();
                 pipeClient.Close();
@@ -31,7 +31,7 @@ namespace AsyncAsDesigned.PerfLib
             }
         }
 
-        private static void SendToken(NamedPipeClientStream pipeClient, Token token)
+        internal static async Task SendToken(Stream pipeClient, Token token)
         {
 
             BinaryFormatter formatter = new BinaryFormatter();
@@ -53,7 +53,7 @@ namespace AsyncAsDesigned.PerfLib
 
             pipeClient.WriteByte((byte)(len / 256));
             pipeClient.WriteByte((byte)(len & 255));
-            pipeClient.Write(outBuffer, 0, len);
+            await pipeClient.WriteAsync(outBuffer, 0, len).ConfigureAwait(false);
 
         }
 

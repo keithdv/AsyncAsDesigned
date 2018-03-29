@@ -80,20 +80,20 @@ namespace AsyncAsDesigned.PerfAppServer
                     listenToDataServer.TokenReceivedEventAsync += async (t2) =>
                     {
                         UpdateStatus(t2, "C");
-                        await NamedPipeClient.SendAsync(t2.AppServerToClient, t);
+                        await NamedPipeClient.SendAsync(t2.AppServerToClient, t).ConfigureAwait(false);
                     };
 
-                    await NamedPipeClient.SendAsync(NamedPipeClient.DataServerListenPipe, t);
+                    await NamedPipeClient.SendAsync(NamedPipeClient.DataServerListenPipe, t).ConfigureAwait(false);
                     UpdateStatus(t, "D");
 
-                    await listenToDataServer.StartAsync(true);
+                    await listenToDataServer.StartAsync(true).ConfigureAwait(false);
                     UpdateStatus(t, "F");
                 });
 
                 return Task.CompletedTask;
             };
 
-            await listenToClient.StartAsync();
+            await listenToClient.StartAsync().ConfigureAwait(false);
 
         }
 
@@ -119,7 +119,6 @@ namespace AsyncAsDesigned.PerfAppServer
                 Console.BackgroundColor = ConsoleColor.Black;
                 Console.Write($"AppServer: ");
 
-
                 for (var i = 0; i < status.Length; i++)
                 {
                     var x = status[i];
@@ -127,19 +126,19 @@ namespace AsyncAsDesigned.PerfAppServer
                     switch (x)
                     {
                         case "R":
-                            Console.BackgroundColor = ConsoleColor.Red;
+                            Console.BackgroundColor = ConsoleColor.DarkRed;
                             break;
                         case "D":
                             Console.BackgroundColor = ConsoleColor.Yellow;
                             break;
                         case "T":
-                            Console.BackgroundColor = ConsoleColor.Gray;
+                            Console.BackgroundColor = ConsoleColor.Red;
                             break;
                         case "C":
                             Console.BackgroundColor = ConsoleColor.Blue;
                             break;
                         case "F":
-                            Console.BackgroundColor = ConsoleColor.Green;
+                            Console.BackgroundColor = ConsoleColor.White;
                             break;
                         default:
                             Console.BackgroundColor = ConsoleColor.Black;

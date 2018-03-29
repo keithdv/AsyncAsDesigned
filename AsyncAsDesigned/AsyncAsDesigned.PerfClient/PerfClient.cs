@@ -23,7 +23,7 @@ namespace AsyncAsDesigned.PerfClient
 
             sw.Start();
 
-            int numToSend = 20;
+            int numToSend = 250;
 
             status = new string[numToSend];
 
@@ -36,7 +36,7 @@ namespace AsyncAsDesigned.PerfClient
 
                 var token = new Token(i, numToSend);
 
-                await NamedPipeClient.SendAsync(NamedPipeClient.AppServerListenPipe, token);
+                await NamedPipeClient.SendAsync(NamedPipeClient.AppServerListenPipe, token).ConfigureAwait(false);
 
                 UpdateStatus(token, "S");
 
@@ -59,7 +59,7 @@ namespace AsyncAsDesigned.PerfClient
                 }));
             }
 
-            await Task.WhenAll(sendTasks.ToArray());
+            await Task.WhenAll(sendTasks.ToArray()).ConfigureAwait(false);
 
             sw.Stop();
 

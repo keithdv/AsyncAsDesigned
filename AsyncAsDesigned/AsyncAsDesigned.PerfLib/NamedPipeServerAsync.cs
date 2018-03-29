@@ -34,7 +34,7 @@ namespace AsyncAsDesigned.PerfLib
         {
             Token token = null;
 
-            using (var pipeServer = new NamedPipeServerStream(pipeName, PipeDirection.In, NamedPipeServerStream.MaxAllowedServerInstances, PipeTransmissionMode.Byte, PipeOptions.Asynchronous))
+            using (var pipeServer = new NamedPipeServerStream(pipeName, PipeDirection.InOut, NamedPipeServerStream.MaxAllowedServerInstances, PipeTransmissionMode.Byte, PipeOptions.Asynchronous))
             {
                 lock (lockCancel)
                 {
@@ -55,8 +55,10 @@ namespace AsyncAsDesigned.PerfLib
 
                 if (!closed)
                 {
-                    token = Received(pipeServer);
+                    token = await Received(pipeServer).ConfigureAwait(false);
                 }
+
+                //NamedPipeClient.SendToken(pipeServer, token);
 
                 pipeServer.Close();
 
@@ -71,14 +73,14 @@ namespace AsyncAsDesigned.PerfLib
 
         }
 
-        private static Token Received(NamedPipeServerStream namedPipeServerStream)
+        private static async Task<Token> Received(NamedPipeServerStream namedPipeServerStream)
         {
             int len = 0;
 
             len = namedPipeServerStream.ReadByte() * 256;
             len += namedPipeServerStream.ReadByte();
             byte[] inBuffer = new byte[len];
-            namedPipeServerStream.Read(inBuffer, 0, len);
+            await namedPipeServerStream.ReadAsync(inBuffer, 0, len).ConfigureAwait(false);
 
             Token token;
 
@@ -86,9 +88,6 @@ namespace AsyncAsDesigned.PerfLib
             {
                 token = (Token)formatter.Deserialize(mem);
             }
-
-            namedPipeServerStream.Disconnect();
-            namedPipeServerStream.Dispose();
 
             return token;
 
