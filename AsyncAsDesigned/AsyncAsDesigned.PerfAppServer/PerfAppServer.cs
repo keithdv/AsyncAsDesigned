@@ -13,20 +13,29 @@ namespace AsyncAsDesigned.PerfAppServer
     {
 
         static object statusLock = new object();
-        static string[] status;
+        static List<string> status = new List<string>();
         static Stopwatch sw = new Stopwatch();
 
 
         public static void Run()
         {
             Console.WriteLine("AppServer");
-
+            object lockId = new object();
+            int id = 0;
+            
             NamedPipeServerAsync listenToClient = new NamedPipeServerAsync(NamedPipeClient.AppServerListenPipe);
 
             listenToClient.TokenReceivedEventAsync += (t) =>
             {
 
-                SetupStatus(t);
+                if (!sw.IsRunning) { sw.Start(); }
+
+                lock (lockId)
+                {
+                    t.AppServerID = id;
+                    id++;
+                }
+
                 UpdateStatus(t, "R");
 
                 Task.Run(() =>
@@ -64,10 +73,20 @@ namespace AsyncAsDesigned.PerfAppServer
 
             NamedPipeServerAsync listenToClient = new NamedPipeServerAsync(NamedPipeClient.AppServerListenPipe);
 
+            object lockId = new object();
+            int id = 0;
+
             listenToClient.TokenReceivedEventAsync += (t) =>
             {
 
-                SetupStatus(t);
+                if (!sw.IsRunning) { sw.Start(); }
+
+                lock (lockId)
+                {
+                    t.AppServerID = id;
+                    id++;
+                }
+
                 UpdateStatus(t, "R");
 
                 Task.Run(async () =>
@@ -80,7 +99,7 @@ namespace AsyncAsDesigned.PerfAppServer
                     listenToDataServer.TokenReceivedEventAsync += async (t2) =>
                     {
                         UpdateStatus(t2, "C");
-                        await NamedPipeClient.SendAsync(t2.AppServerToClient, t).ConfigureAwait(false);
+                        await NamedPipeClient.SendAsync(t2.AppServerToClient, t2).ConfigureAwait(false);
                     };
 
                     await NamedPipeClient.SendAsync(NamedPipeClient.DataServerListenPipe, t).ConfigureAwait(false);
@@ -97,29 +116,21 @@ namespace AsyncAsDesigned.PerfAppServer
 
         }
 
-        private static void SetupStatus(Token t)
-        {
-            lock (statusLock)
-            {
-                if (status == null)
-                {
-                    sw.Start();
-                    status = new string[t.Total];
-                    for (var i = 0; i < status.Length; i++) { status[i] = "_"; }
-                }
-            }
-        }
-
         private static void UpdateStatus(Token t, string s)
         {
             lock (statusLock)
             {
-                status[t.UniqueID] = s;
+                while (t.AppServerID >= status.Count)
+                {
+                    status.Add("_");
+                }
+
+                status[t.AppServerID] = s;
 
                 Console.BackgroundColor = ConsoleColor.Black;
                 Console.Write($"AppServer: ");
 
-                for (var i = 0; i < status.Length; i++)
+                for (var i = 0; i < status.Count; i++)
                 {
                     var x = status[i];
 
@@ -145,10 +156,11 @@ namespace AsyncAsDesigned.PerfAppServer
                             break;
                     }
 
-                    if(i == t.UniqueID)
+                    if (i == t.AppServerID)
                     {
                         Console.Write(x);
-                    } else
+                    }
+                    else
                     {
                         Console.Write(" ");
                     }

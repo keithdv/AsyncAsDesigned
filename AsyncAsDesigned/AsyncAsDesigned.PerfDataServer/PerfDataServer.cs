@@ -11,7 +11,7 @@ namespace AsyncAsDesigned.PerfDataServer
     {
 
         static object statusLock = new object();
-        static string[] status;
+        static List<string> status = new List<string>();
 
         public static async Task RunAsync()
         {
@@ -24,14 +24,6 @@ namespace AsyncAsDesigned.PerfDataServer
 
             listenToAppServer.TokenReceivedEventAsync += (t) =>
             {
-                lock (statusLock)
-                {
-                    if (status == null)
-                    {
-                        status = new string[t.Total];
-                        for (var i = 0; i < status.Length; i++) { status[i] = "_"; }
-                    }
-                }
 
                 UpdateStatus(t, "R");
 
@@ -54,12 +46,18 @@ namespace AsyncAsDesigned.PerfDataServer
         {
             lock (statusLock)
             {
-                status[t.UniqueID] = s;
-                Console.Write($"DataServer: {string.Concat(status.Take(t.UniqueID - 1))}");
+                while(t.AppServerID >= status.Count)
+                {
+                    status.Add("_");
+                }
+
+                status[t.AppServerID] = s;
+
+                Console.Write($"DataServer: {string.Concat(status.Take(t.AppServerID - 1))}");
                 Console.BackgroundColor = ConsoleColor.White;
-                Console.Write(status[t.UniqueID]);
+                Console.Write(status[t.AppServerID]);
                 Console.BackgroundColor = ConsoleColor.Black;
-                Console.Write(string.Concat(status.Skip(t.UniqueID + 1)));
+                Console.Write(string.Concat(status.Skip(t.AppServerID + 1)));
                 Console.WriteLine();
             }
         }

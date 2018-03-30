@@ -9,11 +9,16 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AsyncAsDesigned.PerfLib", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AsyncAsDesigned.PerfLib.Test", "AsyncAsDesigned.PerfLib.Test\AsyncAsDesigned.PerfLib.Test.csproj", "{9AA91BD1-EDA4-4C16-BBF6-7F20CEB83F27}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AsyncAsDesigned.PerfClient", "AsyncAsDesigned.PerfClient\AsyncAsDesigned.PerfClient.csproj", "{7A669DEA-9D17-4074-8925-FAC62C4D2C47}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AsyncAsDesigned.PerfClient", "AsyncAsDesigned.PerfClient\AsyncAsDesigned.PerfClient.csproj", "{7A669DEA-9D17-4074-8925-FAC62C4D2C47}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AsyncAsDesigned.PerfAppServer", "AsyncAsDesigned.PerfAppServer\AsyncAsDesigned.PerfAppServer.csproj", "{923EBE7F-3187-442E-B15C-A331F979AEF9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AsyncAsDesigned.PerfAppServer", "AsyncAsDesigned.PerfAppServer\AsyncAsDesigned.PerfAppServer.csproj", "{923EBE7F-3187-442E-B15C-A331F979AEF9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AsyncAsDesigned.PerfDataServer", "AsyncAsDesigned.PerfDataServer\AsyncAsDesigned.PerfDataServer.csproj", "{77A7CED3-3987-496F-A301-5FFB23FF148C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AsyncAsDesigned.PerfDataServer", "AsyncAsDesigned.PerfDataServer\AsyncAsDesigned.PerfDataServer.csproj", "{77A7CED3-3987-496F-A301-5FFB23FF148C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6EADFE19-5B22-4F01-BDCA-8A7B56A9BECC}"
+	ProjectSection(SolutionItems) = preProject
+		RunSync.ps1 = RunSync.ps1
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

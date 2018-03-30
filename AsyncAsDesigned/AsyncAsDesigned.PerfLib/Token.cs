@@ -9,15 +9,16 @@ namespace AsyncAsDesigned.PerfLib
     [Serializable]
     public class Token
     {
-        public Token(int uniqueID, int total)
+        public Token(int id)
         {
-            this.UniqueID = uniqueID;
-            this.Total = total;
+            this.ID = id;
         }
-        public readonly int UniqueID;
-        public readonly int Total;
+
+        public readonly int ID;
         public readonly string AppServerToClient = Guid.NewGuid().ToString();
         public readonly string DataServerToAppServer = Guid.NewGuid().ToString();
+
+        public int AppServerID { get; set; }
 
     }
 }

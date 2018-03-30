@@ -13,7 +13,7 @@ namespace AsyncAsDesigned.PerfClient
         static object statusLock = new object();
         static string[] status;
         static Stopwatch sw;
-        public static async Task RunAsync()
+        public static async Task RunAsync(int numToSend)
         {
             Console.WriteLine("Client");
 
@@ -22,8 +22,6 @@ namespace AsyncAsDesigned.PerfClient
             sw = new Stopwatch();
 
             sw.Start();
-
-            int numToSend = 250;
 
             status = new string[numToSend];
 
@@ -34,7 +32,7 @@ namespace AsyncAsDesigned.PerfClient
             for (var i = 0; i < numToSend; i++)
             {
 
-                var token = new Token(i, numToSend);
+                var token = new Token(i);
 
                 await NamedPipeClient.SendAsync(NamedPipeClient.AppServerListenPipe, token).ConfigureAwait(false);
 
@@ -72,12 +70,12 @@ namespace AsyncAsDesigned.PerfClient
         {
             lock (statusLock)
             {
-                status[t.UniqueID] = s;
-                Console.Write($"Client: {string.Concat(status.Take(t.UniqueID))}");
+                status[t.ID] = s;
+                Console.Write($"Client: {string.Concat(status.Take(t.ID))}");
                 Console.BackgroundColor = ConsoleColor.White;
-                Console.Write(status[t.UniqueID]);
+                Console.Write(status[t.ID]);
                 Console.BackgroundColor = ConsoleColor.Black;
-                Console.Write(string.Concat(status.Skip(t.UniqueID + 1)));
+                Console.Write(string.Concat(status.Skip(t.ID + 1)));
                 Console.WriteLine();
             }
         }

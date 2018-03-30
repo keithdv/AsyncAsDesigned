@@ -30,7 +30,7 @@ namespace AsyncAsDesigned.PerfLib.Test
         {
 
             AutoResetEvent autoResetEvent = new AutoResetEvent(false);
-            Token token = new Token(1, 1);
+            Token token = new Token(1);
             Token result = null;
 
             namedPipeServer.TokenReceivedEventAsync += (t) =>
@@ -47,7 +47,7 @@ namespace AsyncAsDesigned.PerfLib.Test
             autoResetEvent.WaitOne(1000);
 
             Assert.IsNotNull(result);
-            Assert.AreEqual(token.UniqueID, result.UniqueID);
+            Assert.AreEqual(token.ID, result.ID);
 
             namedPipeServer.Dispose();
             await task; // wait for the thread to finished. 
@@ -59,7 +59,7 @@ namespace AsyncAsDesigned.PerfLib.Test
         {
 
             AutoResetEvent autoResetEvent = new AutoResetEvent(false);
-            Token[] token = new Token[] { new Token(1, 2), new Token(2, 2) };
+            Token[] token = new Token[] { new Token(1), new Token(2) };
             List<Token> result = new List<Token>();
 
             namedPipeServer.TokenReceivedEventAsync += (t) =>
@@ -81,8 +81,8 @@ namespace AsyncAsDesigned.PerfLib.Test
             autoResetEvent.WaitOne(1000);
 
             Assert.AreEqual(2, result.Count);
-            Assert.AreEqual(token[0].UniqueID, result[0].UniqueID);
-            Assert.AreEqual(token[1].UniqueID, result[1].UniqueID);
+            Assert.AreEqual(token[0].ID, result[0].ID);
+            Assert.AreEqual(token[1].ID, result[1].ID);
 
             namedPipeServer.Dispose();
             await task.ConfigureAwait(false);
@@ -94,7 +94,7 @@ namespace AsyncAsDesigned.PerfLib.Test
         public async Task SendReceiveMultiple_TaskCompletionSource()
         {
 
-            Token[] token = new Token[] { new Token(1, 2), new Token(2, 2) };
+            Token[] token = new Token[] { new Token(1), new Token(2) };
             List<Token> result = new List<Token>();
             TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
 
@@ -117,8 +117,8 @@ namespace AsyncAsDesigned.PerfLib.Test
             await taskCompletionSource.Task;
 
             Assert.AreEqual(2, result.Count);
-            Assert.AreEqual(token[0].UniqueID, result[0].UniqueID);
-            Assert.AreEqual(token[1].UniqueID, result[1].UniqueID);
+            Assert.AreEqual(token[0].ID, result[0].ID);
+            Assert.AreEqual(token[1].ID, result[1].ID);
 
             namedPipeServer.Dispose();
             await task;
@@ -131,7 +131,7 @@ namespace AsyncAsDesigned.PerfLib.Test
             // Receive one message than stop
 
             AutoResetEvent autoResetEvent = new AutoResetEvent(false);
-            Token token = new Token(1, 2);
+            Token token = new Token(1);
             Token result = null;
             bool listenThreadCompleted = false;
 
