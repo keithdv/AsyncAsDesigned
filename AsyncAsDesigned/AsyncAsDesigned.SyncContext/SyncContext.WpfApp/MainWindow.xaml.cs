@@ -92,7 +92,7 @@ namespace WpfApp1
 
             // Doesn't block..but is it good practice?
             // 1) This is not asyncronous this is multi-threading (No Async / Await keywords)
-            // 2) Not easy to read (.Result -> .Result WTF??)
+            // 2) Not easy to read (.Result -> .Result WTF??) even for a simple situation
             // 3) IMO Brittle
 
             var count = Count;
@@ -125,6 +125,24 @@ namespace WpfApp1
 
             taskCompletionSource.SetResult(null);
 
+        }
+
+        private void TaskExceptionMethod_Click(object sender, RoutedEventArgs e)
+        {
+            TaskException.Method();
+        }
+
+
+        private async void TaskExceptionMethodAsync_Click(object send, RoutedEventArgs e)
+        {
+            try
+            {
+                await TaskException.MethodAsync();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Exception caught {ex.Message}", "Exception", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+            }
         }
     }
 }

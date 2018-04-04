@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 namespace SyncContext.CoreMsTest
 {
     [TestClass]
-    public class UnitTest1
+    public class NoConfigureAwaitTests
     {
         [TestMethod]
         public void NoConfigureAwait_Wait()

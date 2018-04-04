@@ -180,6 +180,7 @@
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ConfigureAwaitFalseController.cs" />
     <Compile Include="Controllers\NoConfigureAwaitController.cs" />
+    <Compile Include="Controllers\TaskExceptionController.cs" />
     <Compile Include="Controllers\ValuesController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>

@@ -41,6 +41,11 @@
             <TextBlock>ConfigureAwaitFalse</TextBlock>
             <Button x:Name="ConfigureAwaitFalseResult" Click="ConfigureAwaitFalseResult_Click" >Method().Result</Button>
             <Button x:Name="ConfigureAwaitFalseAsync" Click="ConfigureAwaitFalseAsync_Click" >await Method()</Button>
+            
+            <TextBlock>Task Exception</TextBlock>
+            <Button x:Name="TaskExceptionMethod" Click="TaskExceptionMethod_Click">Async Void</Button>
+            <Button x:Name="TaskExceptionMethodAsync" Click="TaskExceptionMethodAsync_Click">Async Task</Button>
+
         </StackPanel>
 
 

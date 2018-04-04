@@ -218,10 +218,80 @@ namespace SyncContext.WebApiWpfClient
             {
                 MessageBox.Show("Timeout!", "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation);
             }
+
+            try
+            {
+                await funcTask; // Raise any exception
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failure: {ex.Message}");
+            }
+
             AllowUserInput = true;
 
             taskCompletionSource.SetResult(null);
 
         }
+
+        private async void CoreTaskExceptionMethod_Click(object sender, RoutedEventArgs e)
+        {
+            await GetInLine(async () =>
+            {
+                using (var httpResponse = await httpClientCore.GetAsync($@"TaskException/Method"))
+                {
+                    if (httpResponse.StatusCode != System.Net.HttpStatusCode.InternalServerError)
+                    {
+                        MessageBox.Show($"Failure: Expected InternalServerError. Received {httpResponse.StatusCode.ToString()}");
+                    }
+                }
+            });
+        }
+
+        private async void FrameworkTaskExceptionMethod_Click(object sender, RoutedEventArgs e)
+        {
+            await GetInLine(async () =>
+            {
+                using (var httpResponse = await httpClientFramework.GetAsync($@"TaskException/Method"))
+                {
+                    if (httpResponse.StatusCode != System.Net.HttpStatusCode.InternalServerError)
+                    {
+                        MessageBox.Show($"Failure: Expected InternalServerError. Received {httpResponse.StatusCode.ToString()}");
+                    }
+                }
+            });
+        }
+
+        private async void CoreTaskExceptionMethodAsync_Click(object sender, RoutedEventArgs e)
+        {
+            await GetInLine(async () =>
+            {
+                using (var httpResponse = await httpClientCore.GetAsync($@"TaskException/MethodAsync"))
+                {
+                    if (httpResponse.StatusCode != System.Net.HttpStatusCode.InternalServerError)
+                    {
+                        MessageBox.Show($"Failure: Expected InternalServerError. Received {httpResponse.StatusCode.ToString()}");
+                    }
+                }
+            });
+        }
+
+        private async void FrameworkTaskExceptionMethodAsync_Click(object sender, RoutedEventArgs e)
+        {
+            await GetInLine(async () =>
+            {
+                using (var httpResponse = await httpClientFramework.GetAsync($@"TaskException/MethodAsync"))
+                {
+                    if (httpResponse.StatusCode != System.Net.HttpStatusCode.InternalServerError)
+                    {
+                        MessageBox.Show($"Failure: Expected InternalServerError. Received {httpResponse.StatusCode.ToString()}");
+                    }
+                }
+            });
+        }
+
+
+
+
     }
 }

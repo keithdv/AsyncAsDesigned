@@ -11,6 +11,8 @@ namespace SyncContext.ConsoleApp
 
             var result = NoConfigureAwait.Increment(0).Result;
 
+            TaskException.Method();
+
             Console.WriteLine($"Complete {result}");
             Console.ReadKey();
 

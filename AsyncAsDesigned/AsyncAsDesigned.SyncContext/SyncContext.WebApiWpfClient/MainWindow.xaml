@@ -10,10 +10,16 @@
         <Style TargetType="Button">
             <Setter Property="Margin" Value="3"></Setter>
             <Setter Property="FontSize" Value="18"></Setter>
+            <Setter Property="IsEnabled">
+                <Setter.Value>
+                    <Binding Path="AllowUserInput" Mode="OneWay"></Binding>
+                </Setter.Value>
+            </Setter>
         </Style>
         <Style TargetType="TextBlock">
             <Setter Property="Margin" Value="3"></Setter>
             <Setter Property="FontSize" Value="18"></Setter>
+
         </Style>
     </Window.Resources>
     <Grid Margin="0, 20, 0, 0" HorizontalAlignment="Left">
@@ -33,23 +39,37 @@
 
         <StackPanel Grid.Column="0">
             <TextBlock>ASP.NET Core WebApi</TextBlock>
+            
             <TextBlock>No ConfigureAwait</TextBlock>
-            <Button x:Name="CoreNoConfigureAwaitResult" Click="CoreNoConfigureAwaitResult_Click" IsEnabled="{Binding Path=AllowUserInput, Mode=OneWay}" >Method().Result</Button>
-            <Button x:Name="CoreNoConfigureAwaitAsync" Click="CoreNoConfigureAwaitAsync_Click" IsEnabled="{Binding Path=AllowUserInput, Mode=OneWay}" >await Method()</Button>
+            <Button x:Name="CoreNoConfigureAwaitResult" Click="CoreNoConfigureAwaitResult_Click">Method().Result</Button>
+            <Button x:Name="CoreNoConfigureAwaitAsync" Click="CoreNoConfigureAwaitAsync_Click">await Method()</Button>
+            
             <TextBlock>ConfigureAwaitFalse</TextBlock>
-            <Button x:Name="CoreConfigureAwaitFalseResult" Click="CoreConfigureAwaitFalseResult_Click" IsEnabled="{Binding Path=AllowUserInput, Mode=OneWay}" >Method().Result</Button>
-            <Button x:Name="CoreConfigureAwaitFalseAsync" Click="CoreConfigureAwaitFalseAsync_Click" IsEnabled="{Binding Path=AllowUserInput, Mode=OneWay}" >await Method()</Button>
+            <Button x:Name="CoreConfigureAwaitFalseResult" Click="CoreConfigureAwaitFalseResult_Click">Method().Result</Button>
+            <Button x:Name="CoreConfigureAwaitFalseAsync" Click="CoreConfigureAwaitFalseAsync_Click">await Method()</Button>
+
+            <TextBlock>Task Exception</TextBlock>
+            <Button x:Name="CoreTaskExceptionMethod" Click="CoreTaskExceptionMethod_Click">Async Void</Button>
+            <Button x:Name="CoreTaskExceptionMethodAsync" Click="CoreTaskExceptionMethodAsync_Click">Async Task</Button>
+
 
         </StackPanel>
 
         <StackPanel Grid.Column="1">
             <TextBlock>ASP.NET Framework WebApi</TextBlock>
+            
             <TextBlock>No ConfigureAwait</TextBlock>
-            <Button x:Name="FrameworkNoConfigureAwaitResult" Click="FrameworkNoConfigureAwaitResult_Click" IsEnabled="{Binding Path=AllowUserInput, Mode=OneWay}" >Method().Result</Button>
-            <Button x:Name="FrameworkCoreNoConfigureAwaitAsync" Click="FrameworkNoConfigureAwaitAsync_Click" IsEnabled="{Binding Path=AllowUserInput, Mode=OneWay}" >await Method()</Button>
+            <Button x:Name="FrameworkNoConfigureAwaitResult" Click="FrameworkNoConfigureAwaitResult_Click">Method().Result</Button>
+            <Button x:Name="FrameworkCoreNoConfigureAwaitAsync" Click="FrameworkNoConfigureAwaitAsync_Click">await Method()</Button>
+            
             <TextBlock>ConfigureAwaitFalse</TextBlock>
-            <Button x:Name="FrameworkConfigureAwaitFalseResult" Click="FrameworkConfigureAwaitFalseResult_Click" IsEnabled="{Binding Path=AllowUserInput, Mode=OneWay}" >Method().Result</Button>
-            <Button x:Name="FrameworkConfigureAwaitFalseAsync" Click="FrameworkConfigureAwaitFalseAsync_Click" IsEnabled="{Binding Path=AllowUserInput, Mode=OneWay}" >await Method()</Button>
+            <Button x:Name="FrameworkConfigureAwaitFalseResult" Click="FrameworkConfigureAwaitFalseResult_Click">Method().Result</Button>
+            <Button x:Name="FrameworkConfigureAwaitFalseAsync" Click="FrameworkConfigureAwaitFalseAsync_Click">await Method()</Button>
+
+            <TextBlock>Task Exception</TextBlock>
+            <Button x:Name="FrameworkTaskExceptionMethod" Click="FrameworkTaskExceptionMethod_Click">Async Void</Button>
+            <Button x:Name="FrameworkTaskExceptionMethodAsync" Click="FrameworkTaskExceptionMethodAsync_Click">Async Task</Button>
+
         </StackPanel>
 
 
