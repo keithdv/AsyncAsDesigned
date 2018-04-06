@@ -9,10 +9,12 @@ namespace SyncContext.Lib
     {
 
 
-        public static async void Method()
+        public static void Method()
         {
-            // Bad!
-            await NestedMethod();
+            // Very Bad! Exceptions will be lost
+            // Do not do this
+            // await or .Result/.Wait()
+            NestedMethod();
         }
 
         public static async Task MethodAsync()

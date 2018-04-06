@@ -144,5 +144,45 @@ namespace WpfApp1
                 MessageBox.Show($"Exception caught {ex.Message}", "Exception", MessageBoxButton.OK, MessageBoxImage.Exclamation);
             }
         }
+
+        public async void NotNullSyncContext_Click(object sender, RoutedEventArgs e)
+        {
+            var nsc = new NullSyncContextBehavior();
+
+            Task[] tasks = new Task[100];
+
+            for (var i = 0; i < 100; i++)
+            {
+                tasks[i] = nsc.Increment();
+            }
+
+            await Task.WhenAll(tasks);
+
+            MessageBox.Show($"Count: {nsc.Count}");
+
+        }
+
+        public async void NullSyncContext_Click(object sender, RoutedEventArgs e)
+        {
+            var nsc = new NullSyncContextBehavior();
+
+            var sc = System.Threading.SynchronizationContext.Current;
+
+            System.Threading.SynchronizationContext.SetSynchronizationContext(null);
+
+            Task[] tasks = new Task[100];
+
+            for (var i = 0; i < 100; i++)
+            {
+                tasks[i] = nsc.Increment();
+            }
+
+            await Task.WhenAll(tasks);
+
+            MessageBox.Show($"Count: {nsc.Count}");
+
+            System.Threading.SynchronizationContext.SetSynchronizationContext(sc);
+
+        }
     }
 }

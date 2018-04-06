@@ -52,6 +52,11 @@
         <StackPanel Grid.Column="2">
             <TextBlock>Task Examples</TextBlock>
             <Button x:Name="TaskQueue" Click="TaskQueue_Click" >Task Queue</Button>
+            <TextBlock>Null SychContext</TextBlock>
+            <TextBlock>Behavior</TextBlock>
+            <Button x:Name="NotNullSyncContext" Click="NotNullSyncContext_Click" >Dispatcher SyncContext</Button>
+            <Button x:Name="NullSyncContext" Click="NullSyncContext_Click" >Null SyncContext</Button>
+
         </StackPanel>
         
         <StackPanel Grid.Row="1" Grid.ColumnSpan="3" HorizontalAlignment="Stretch">
