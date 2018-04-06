@@ -36,34 +36,38 @@ namespace AsyncAsDesigned.PerfAppServer
                     id++;
                 }
 
-                UpdateStatus(t, "R");
+                UpdateStatus(t, "R"); // R - Message Received
 
+                // Spawn a new thread with each incoming message
+                // So that it's fast!!! Right?
                 Task.Run(() =>
                 {
 
-                    UpdateStatus(t, "T");
+                    UpdateStatus(t, "T"); // T - Thread Started
 
                     NamedPipeServerAsync listenToDataServer = new NamedPipeServerAsync(t.DataServerToAppServer);
 
+                    // When the response is received from the dataserver
+                    // response to the client
                     listenToDataServer.TokenReceivedEventAsync += (t2) =>
                     {
-                        UpdateStatus(t, "C");
-                        NamedPipeClient.SendAsync(t2.AppServerToClient, t).Wait();
+                        UpdateStatus(t, "C"); // C - Respond to client
+                        NamedPipeClient.Send(t2.AppServerToClient, t); // Blocks Thread until the message is sent to the client
                         return Task.CompletedTask;
                     };
 
-                    NamedPipeClient.SendAsync(NamedPipeClient.DataServerListenPipe, t).Wait();
-                    UpdateStatus(t, "D");
+                    NamedPipeClient.Send(NamedPipeClient.DataServerListenPipe, t); // Blocks Thread until the message is sent to the data server
+                    UpdateStatus(t, "D"); // D - Waiting for DataServer (DataServer purposefully delays)
 
-                    listenToDataServer.StartAsync(true).Wait();
-                    UpdateStatus(t, "F");
+                    listenToDataServer.Start(true); // Blocks thread until the DataServer responds
+                    UpdateStatus(t, "F"); // F - Finished
                 });
 
                 return Task.CompletedTask;
 
             };
 
-            listenToClient.StartAsync().Wait();
+            listenToClient.Start(); // Inifinte loop waiting for the client
 
         }
 

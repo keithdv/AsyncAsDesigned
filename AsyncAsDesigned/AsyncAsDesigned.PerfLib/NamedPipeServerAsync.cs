@@ -25,6 +25,11 @@ namespace AsyncAsDesigned.PerfLib
             this.pipeName = pipeName;
         }
 
+        public void Start(bool oneMessage = false)
+        {
+            StartAsync(oneMessage).Wait();
+        }
+
         public Task StartAsync(bool oneMessage = false)
         {
             return Listen(oneMessage);

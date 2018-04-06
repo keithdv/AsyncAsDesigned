@@ -2,7 +2,7 @@
   "profiles": {
     "AsyncAsDesigned.PerfClient": {
       "commandName": "Project",
-      "commandLineArgs": "10"
+      "commandLineArgs": "25"
     }
   }
 }

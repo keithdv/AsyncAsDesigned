@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "AsyncAsDesigned.PerfAppServer": {
+      "commandName": "Project",
+      "commandLineArgs": "async"
+    }
+  }
+}

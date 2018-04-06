@@ -15,6 +15,48 @@ namespace AsyncAsDesigned.PerfLib
         public const string AppServerListenPipe = @"\\AsyncAsDesigned\AppServerListenPipe";
         public const string DataServerListenPipe = @"\\AsyncAsDesigned\DataServerListenPipe";
 
+        public static void Send(string pipeName, Token token)
+        {
+
+            using (NamedPipeClientStream pipeClient = new NamedPipeClientStream(".", pipeName, PipeDirection.Out, PipeOptions.Asynchronous))
+            {
+
+                pipeClient.Connect();
+
+                SendToken(pipeClient, token);
+
+                pipeClient.Flush();
+                pipeClient.Close();
+
+            }
+        }
+
+        internal static void SendToken(Stream pipeClient, Token token)
+        {
+
+            BinaryFormatter formatter = new BinaryFormatter();
+
+            byte[] outBuffer = null;
+
+            using (var mem = new MemoryStream())
+            {
+                formatter.Serialize(mem, token);
+                outBuffer = mem.ToArray();
+                mem.Flush();
+            }
+
+            int len = outBuffer.Length;
+            if (len > UInt16.MaxValue)
+            {
+                len = (int)UInt16.MaxValue;
+            }
+
+            pipeClient.WriteByte((byte)(len / 256));
+            pipeClient.WriteByte((byte)(len & 255));
+            pipeClient.Write(outBuffer, 0, len);
+
+        }
+
         public static async Task SendAsync(string pipeName, Token token)
         {
 
@@ -23,7 +65,7 @@ namespace AsyncAsDesigned.PerfLib
 
                 await pipeClient.ConnectAsync().ConfigureAwait(false);
 
-                await SendToken(pipeClient, token).ConfigureAwait(false);
+                await SendTokenAsync(pipeClient, token).ConfigureAwait(false);
 
                 pipeClient.Flush();
                 pipeClient.Close();
@@ -31,7 +73,7 @@ namespace AsyncAsDesigned.PerfLib
             }
         }
 
-        internal static async Task SendToken(Stream pipeClient, Token token)
+        internal static async Task SendTokenAsync(Stream pipeClient, Token token)
         {
 
             BinaryFormatter formatter = new BinaryFormatter();

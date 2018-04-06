@@ -1,6 +1,7 @@
 ﻿using SyncContext.Lib;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace WpfApp1
 {
@@ -55,14 +57,12 @@ namespace WpfApp1
         {
             // Blocked..
             Count = NoConfigureAwait.Increment(Count).Result;
-
+            
         }
 
         public async void NoConfigureAwaitAsync_Click(object sender, RoutedEventArgs e)
         {
-
             // This is one of the few acceptable places to use Async Void
-
             Count = await NoConfigureAwait.Increment(Count);
 
         }
@@ -184,5 +184,7 @@ namespace WpfApp1
             System.Threading.SynchronizationContext.SetSynchronizationContext(sc);
 
         }
+
+
     }
 }

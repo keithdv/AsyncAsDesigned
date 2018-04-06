@@ -17,11 +17,6 @@ namespace SyncContext.WebApiNetFramework.Controllers
         [HttpGet()]
         public void Method()
         {
-            // Dirty but exception is not lost
-            // AspNetSynchronizationContext saves the day and sees the excetion 
-            // even though the exception is thrown within an async void
-            // So the response is "Internal Server Error"
-
             TaskException.Method();
         }
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace SyncContext.Lib
@@ -8,17 +9,17 @@ namespace SyncContext.Lib
 
         public static async Task<int> Increment(int count)
         {
-            return await NestedMethod1(count).ConfigureAwait(false);
-        }
+            Debug.WriteLine($"ConfigureAwaitFalse.Increment Start: {System.Threading.Thread.CurrentThread.ManagedThreadId}");
 
-        private static  async Task<int> NestedMethod1(int count)
-        {
-            return await NestedMethod2(count).ConfigureAwait(false);
-        }
+            var delayTask = Task.Delay(2000);
+            await delayTask.ConfigureAwait(false);
 
-        private static async Task<int> NestedMethod2(int count)
-        {
-            await Task.Delay(1000).ConfigureAwait(false);
+            Debug.WriteLine($"ConfigureAwaitFalse.Increment After Task.Delay: {System.Threading.Thread.CurrentThread.ManagedThreadId}");
+
+            await Task.Delay(2000).ConfigureAwait(false);
+
+            Debug.WriteLine($"ConfigureAwaitFalse.NestedMethod1 After Task.Delay: {System.Threading.Thread.CurrentThread.ManagedThreadId}");
+
             return count + 1;
         }
 

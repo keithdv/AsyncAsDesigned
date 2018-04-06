@@ -30,7 +30,7 @@ namespace AsyncAsDesigned.PerfDataServer
                 Task.Run(async () =>
                 {
                     UpdateStatus(t, "T");
-                    await Task.Delay(300).ConfigureAwait(false);
+                    await Task.Delay(1000).ConfigureAwait(false);
                     UpdateStatus(t, "D");
                     await NamedPipeClient.SendAsync(t.DataServerToAppServer, t).ConfigureAwait(false);
                     UpdateStatus(t, "F");
