@@ -14,26 +14,26 @@ namespace AsyncAsDesigned.PerfAppServer
 
         static object statusLock = new object();
         static List<string> status = new List<string>();
-        static Stopwatch sw = new Stopwatch();
 
 
-        public static void Run()
+        public static void Run(string pipeName)
         {
-            Console.WriteLine("AppServer");
-            object lockId = new object();
-            int id = 0;
+            Console.WriteLine($"Start AppServer Sync {pipeName}");
 
-            NamedPipeServerAsync listenToClient = new NamedPipeServerAsync(NamedPipeClient.AppServerListenPipe);
+            object lockId = new object();
+
+            NamedPipeServerAsync listenToClient = new NamedPipeServerAsync(pipeName);
 
             listenToClient.TokenReceivedEventAsync += (t) =>
             {
 
-                if (!sw.IsRunning) { sw.Start(); }
+                // Start the time when the first value comes in from the first client
+                if (!Program.Start.HasValue) { Program.Start = DateTime.Now; }
 
                 lock (lockId)
                 {
-                    t.AppServerID = id;
-                    id++;
+                    t.AppServerID = ID;
+                    ID++;
                 }
 
                 UpdateStatus(t, "R"); // R - Message Received
@@ -42,7 +42,6 @@ namespace AsyncAsDesigned.PerfAppServer
                 // So that it's fast!!! Right?
                 Task.Run(() =>
                 {
-
                     UpdateStatus(t, "T"); // T - Thread Started
 
                     NamedPipeServerAsync listenToDataServer = new NamedPipeServerAsync(t.DataServerToAppServer);
@@ -59,10 +58,9 @@ namespace AsyncAsDesigned.PerfAppServer
                     NamedPipeClient.Send(NamedPipeClient.DataServerListenPipe, t); // Blocks Thread until the message is sent to the data server
                     UpdateStatus(t, "D"); // D - Waiting for DataServer (DataServer purposefully delays)
 
-                    if (!t.End)
-                    {
-                        listenToDataServer.Start(true); // Blocks thread until the DataServer responds
-                    }
+
+                    listenToDataServer.Start(true); // Blocks thread until the DataServer responds
+
                     UpdateStatus(t, "F"); // F - Finished
                 });
 
@@ -72,26 +70,29 @@ namespace AsyncAsDesigned.PerfAppServer
 
             listenToClient.Start(); // Inifinte loop waiting for the client
 
+            Console.WriteLine($"End AppServer {pipeName}");
+
         }
 
-        public static async Task RunAsync()
-        {
-            Console.WriteLine("AppServer");
+        public static int ID = 0;
 
-            NamedPipeServerAsync listenToClient = new NamedPipeServerAsync(NamedPipeClient.AppServerListenPipe);
+        public static async Task RunAsync(string pipeName)
+        {
+            Console.WriteLine($"Start AppServer Async {pipeName}");
+
+            NamedPipeServerAsync listenToClient = new NamedPipeServerAsync(pipeName);
 
             object lockId = new object();
-            int id = 0;
 
             listenToClient.TokenReceivedEventAsync += (t) =>
             {
-
-                if (!sw.IsRunning) { sw.Start(); }
+                // Start the time when the first value comes in from the first client
+                if (!Program.Start.HasValue) { Program.Start = DateTime.Now; }
 
                 lock (lockId)
                 {
-                    t.AppServerID = id;
-                    id++;
+                    t.AppServerID = ID;
+                    ID++;
                 }
 
                 UpdateStatus(t, "R");
@@ -100,6 +101,7 @@ namespace AsyncAsDesigned.PerfAppServer
                 {
 
                     UpdateStatus(t, "T");
+
 
                     NamedPipeServerAsync listenToDataServer = new NamedPipeServerAsync(t.DataServerToAppServer);
 
@@ -112,32 +114,30 @@ namespace AsyncAsDesigned.PerfAppServer
                     await NamedPipeClient.SendAsync(NamedPipeClient.DataServerListenPipe, t).ConfigureAwait(false);
                     UpdateStatus(t, "D");
 
-                    if (!t.End)
-                    {
-                        await listenToDataServer.StartAsync(true).ConfigureAwait(false);
-                    }
+
+                    await listenToDataServer.StartAsync(true).ConfigureAwait(false);
+
 
                     UpdateStatus(t, "F");
+
                 }
 
-                var waitForDataServerTask = Task.Run(() => Respond());
+                Task.Run(() => Respond());
 
-                if (!t.End)
-                {
-                    return Task.CompletedTask;
-                } else
-                {
-                    return waitForDataServerTask;
-                }
+                return Task.CompletedTask;
 
             };
 
             await listenToClient.StartAsync().ConfigureAwait(false);
 
+            Console.WriteLine($"End AppServer {pipeName}");
+
         }
 
         private static void UpdateStatus(Token t, string s)
         {
+
+#if DEBUG
             lock (statusLock)
             {
                 while (t.AppServerID >= status.Count)
@@ -148,7 +148,7 @@ namespace AsyncAsDesigned.PerfAppServer
                 status[t.AppServerID] = s;
 
                 Console.BackgroundColor = ConsoleColor.Black;
-                Console.Write($"AppServer: ");
+                ConsoleOutput.ConsoleWrite($"AppServer: ");
 
                 for (var i = 0; i < status.Count; i++)
                 {
@@ -178,11 +178,11 @@ namespace AsyncAsDesigned.PerfAppServer
 
                     if (i == t.AppServerID)
                     {
-                        Console.Write(x);
+                        ConsoleOutput.ConsoleWrite(x);
                     }
                     else
                     {
-                        Console.Write(" ");
+                        ConsoleOutput.ConsoleWrite(" ");
                     }
 
                 }
@@ -190,10 +190,15 @@ namespace AsyncAsDesigned.PerfAppServer
 
                 Console.BackgroundColor = ConsoleColor.Black;
 
-                Console.Write($" Time: {sw.Elapsed.TotalSeconds} Thread: {Thread.CurrentThread.ManagedThreadId}");
-                Console.WriteLine();
+                ConsoleOutput.ConsoleWrite($" Time: {(Program.Start.Value - DateTime.Now).TotalSeconds} Thread: {Thread.CurrentThread.ManagedThreadId}");
+                ConsoleOutput.ConsoleWriteLine(string.Empty);
+
             }
+
+#endif
+
         }
+
 
     }
 }

@@ -69,13 +69,9 @@ namespace AsyncAsDesigned.PerfLib
 
                     pipeServer.Close();
 
-                    if(token != null && token.End)
-                    {
-
-                    }
                 }
 
-                if (token != null)
+                if (token != null && !token.End)
                 {
                     await (TokenReceivedEventAsync?.Invoke(token) ?? Task.CompletedTask).ConfigureAwait(false);
                 }

@@ -16,7 +16,7 @@ namespace AsyncAsDesigned.PerfDataServer
         public static async Task RunAsync()
         {
 
-            Console.WriteLine("DataServer");
+            ConsoleOutput.ConsoleWriteLine("DataServer");
 
             NamedPipeServerAsync listenToAppServer = new NamedPipeServerAsync(NamedPipeClient.DataServerListenPipe);
 
@@ -27,19 +27,16 @@ namespace AsyncAsDesigned.PerfDataServer
 
                 UpdateStatus(t, "R");
 
-                if (!t.End)
+                async Task respond()
                 {
-                    async Task respond()
-                    {
-                        UpdateStatus(t, "T");
-                        await Task.Delay(1000).ConfigureAwait(false);
-                        UpdateStatus(t, "D");
-                        await NamedPipeClient.SendAsync(t.DataServerToAppServer, t).ConfigureAwait(false);
-                        UpdateStatus(t, "F");
-                    };
+                    UpdateStatus(t, "T");
+                    await Task.Delay(300).ConfigureAwait(false);
+                    UpdateStatus(t, "D");
+                    await NamedPipeClient.SendAsync(t.DataServerToAppServer, t).ConfigureAwait(false);
+                    UpdateStatus(t, "F");
+                };
 
-                    Task.Run(() => respond());
-                }
+                Task.Run(() => respond());
 
                 return Task.CompletedTask;
 
@@ -51,6 +48,7 @@ namespace AsyncAsDesigned.PerfDataServer
 
         private static void UpdateStatus(Token t, string s)
         {
+#if DEBUG
             lock (statusLock)
             {
                 while(t.AppServerID >= status.Count)
@@ -60,13 +58,14 @@ namespace AsyncAsDesigned.PerfDataServer
 
                 status[t.AppServerID] = s;
 
-                Console.Write($"DataServer: {string.Concat(status.Take(t.AppServerID - 1))}");
+                ConsoleOutput.ConsoleWrite($"DataServer: {string.Concat(status.Take(t.AppServerID - 1))}");
                 Console.BackgroundColor = ConsoleColor.White;
-                Console.Write(status[t.AppServerID]);
+                ConsoleOutput.ConsoleWrite(status[t.AppServerID]);
                 Console.BackgroundColor = ConsoleColor.Black;
-                Console.Write(string.Concat(status.Skip(t.AppServerID + 1)));
-                Console.WriteLine();
+                ConsoleOutput.ConsoleWrite(string.Concat(status.Skip(t.AppServerID + 1)));
+                ConsoleOutput.ConsoleWriteLine(string.Empty);
             }
+#endif
         }
     }
 

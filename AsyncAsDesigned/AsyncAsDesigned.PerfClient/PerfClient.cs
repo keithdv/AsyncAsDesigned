@@ -13,16 +13,14 @@ namespace AsyncAsDesigned.PerfClient
     {
         static object statusLock = new object();
         static string[] status;
-        static Stopwatch sw;
-        public static async Task RunAsync(int numToSend)
+
+        public static async Task RunAsync(int numToSend, string appServerPipeName)
         {
-            Console.WriteLine("Client");
 
-            await Task.Delay(1000);
+            object receivedLock = new object();
+            int received = 0;
 
-            sw = new Stopwatch();
-
-            sw.Start();
+            Console.WriteLine($"Start Client {appServerPipeName}");
 
             status = new string[numToSend];
 
@@ -38,6 +36,10 @@ namespace AsyncAsDesigned.PerfClient
                 listen.TokenReceivedEventAsync += (t) =>
                 {
                     UpdateStatus(token, "R");
+                    lock (receivedLock)
+                    {
+                        received++;
+                    }
                     return Task.CompletedTask;
                 };
 
@@ -51,7 +53,7 @@ namespace AsyncAsDesigned.PerfClient
 
                 var token = new Token(i);
 
-                await NamedPipeClient.SendAsync(NamedPipeClient.AppServerListenPipe, token).ConfigureAwait(false);
+                await NamedPipeClient.SendAsync(appServerPipeName, token).ConfigureAwait(false);
 
                 UpdateStatus(token, "S");
 
@@ -61,29 +63,37 @@ namespace AsyncAsDesigned.PerfClient
 
             await Task.WhenAll(sendTasks.ToArray()).ConfigureAwait(false);
 
-            sw.Stop();
+            await NamedPipeClient.SendAsync(appServerPipeName, new Token(true)).ConfigureAwait(false);
 
-            await NamedPipeClient.SendAsync(NamedPipeClient.AppServerListenPipe, new Token(true)).ConfigureAwait(false);
+            if (received != numToSend) { throw new Exception($"Failure: Number sent {numToSend} Number received {received}"); }
 
-            Console.WriteLine($"{sw.Elapsed.TotalSeconds}");
-            //Console.ReadKey();
+#if DEBUG
+            Console.ReadKey();
+#endif
+            Exception ex = null;
 
-            File.AppendAllLines(@"..\Results.txt", new string[] { $"{numToSend}  {sw.Elapsed.TotalMilliseconds}" });
+
+
+            Console.WriteLine($"End Client {appServerPipeName}");
 
         }
 
         private static void UpdateStatus(Token t, string s)
         {
+#if DEBUG
             lock (statusLock)
             {
                 status[t.ID] = s;
-                Console.Write($"Client: {string.Concat(status.Take(t.ID))}");
+                ConsoleOutput.ConsoleWrite($"Client: {string.Concat(status.Take(t.ID))}");
                 Console.BackgroundColor = ConsoleColor.White;
-                Console.Write(status[t.ID]);
+                ConsoleOutput.ConsoleWrite(status[t.ID]);
                 Console.BackgroundColor = ConsoleColor.Black;
-                Console.Write(string.Concat(status.Skip(t.ID + 1)));
-                Console.WriteLine();
+                ConsoleOutput.ConsoleWrite(string.Concat(status.Skip(t.ID + 1)));
+                ConsoleOutput.ConsoleWriteLine(string.Empty);
             }
+
+#endif
+
         }
     }
 }

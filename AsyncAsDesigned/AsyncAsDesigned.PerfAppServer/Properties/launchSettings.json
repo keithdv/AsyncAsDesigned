@@ -2,7 +2,7 @@
   "profiles": {
     "AsyncAsDesigned.PerfAppServer": {
       "commandName": "Project",
-      "commandLineArgs": "async"
+      "commandLineArgs": "async 1"
     }
   }
 }
