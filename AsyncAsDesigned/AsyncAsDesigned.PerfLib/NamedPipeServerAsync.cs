@@ -39,42 +39,48 @@ namespace AsyncAsDesigned.PerfLib
         {
             Token token = null;
 
-            using (var pipeServer = new NamedPipeServerStream(pipeName, PipeDirection.InOut, NamedPipeServerStream.MaxAllowedServerInstances, PipeTransmissionMode.Byte, PipeOptions.Asynchronous))
+            do
             {
-                lock (lockCancel)
+                using (var pipeServer = new NamedPipeServerStream(pipeName, PipeDirection.InOut, NamedPipeServerStream.MaxAllowedServerInstances, PipeTransmissionMode.Byte, PipeOptions.Asynchronous))
                 {
-                    if (closed) { return; } // Comment this out, run all tests, SendReceiveMultiple blocks. 
-                    cancelWaitForConnection = new CancellationTokenSource();
+                    lock (lockCancel)
+                    {
+                        if (closed) { return; } // Comment this out, run all tests, SendReceiveMultiple blocks. 
+                        cancelWaitForConnection = new CancellationTokenSource();
+                    }
+
+                    try
+                    {
+                        await pipeServer.WaitForConnectionAsync(cancelWaitForConnection.Token).ConfigureAwait(false);
+                    }
+                    catch (System.OperationCanceledException) { closed = true; } // Thrown when CancallationTokenSource.Cancel() is called
+
+                    lock (lockCancel)
+                    {
+                        cancelWaitForConnection = null;
+                    }
+
+                    if (!closed)
+                    {
+                        token = await Received(pipeServer).ConfigureAwait(false);
+                    }
+
+                    //NamedPipeClient.SendToken(pipeServer, token);
+
+                    pipeServer.Close();
+
+                    if(token != null && token.End)
+                    {
+
+                    }
                 }
 
-                try
+                if (token != null)
                 {
-                    await pipeServer.WaitForConnectionAsync(cancelWaitForConnection.Token).ConfigureAwait(false);
+                    await (TokenReceivedEventAsync?.Invoke(token) ?? Task.CompletedTask).ConfigureAwait(false);
                 }
-                catch (System.OperationCanceledException) { closed = true; } // Thrown when CancallationTokenSource.Cancel() is called
-
-                lock (lockCancel)
-                {
-                    cancelWaitForConnection = null;
-                }
-
-                if (!closed)
-                {
-                    token = await Received(pipeServer).ConfigureAwait(false);
-                }
-
-                //NamedPipeClient.SendToken(pipeServer, token);
-
-                pipeServer.Close();
-
             }
-
-            if (token != null)
-            {
-                await (TokenReceivedEventAsync?.Invoke(token) ?? Task.CompletedTask).ConfigureAwait(false);
-            }
-
-            if (!oneMessage && !closed) { await Listen().ConfigureAwait(false); } // Recursive loop unless we only want to receive one message
+            while (!(token?.End ?? false) && !oneMessage && !closed);
 
         }
 

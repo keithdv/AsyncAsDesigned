@@ -22,7 +22,7 @@ namespace AsyncAsDesigned.PerfAppServer
             Console.WriteLine("AppServer");
             object lockId = new object();
             int id = 0;
-            
+
             NamedPipeServerAsync listenToClient = new NamedPipeServerAsync(NamedPipeClient.AppServerListenPipe);
 
             listenToClient.TokenReceivedEventAsync += (t) =>
@@ -59,7 +59,10 @@ namespace AsyncAsDesigned.PerfAppServer
                     NamedPipeClient.Send(NamedPipeClient.DataServerListenPipe, t); // Blocks Thread until the message is sent to the data server
                     UpdateStatus(t, "D"); // D - Waiting for DataServer (DataServer purposefully delays)
 
-                    listenToDataServer.Start(true); // Blocks thread until the DataServer responds
+                    if (!t.End)
+                    {
+                        listenToDataServer.Start(true); // Blocks thread until the DataServer responds
+                    }
                     UpdateStatus(t, "F"); // F - Finished
                 });
 
@@ -93,7 +96,7 @@ namespace AsyncAsDesigned.PerfAppServer
 
                 UpdateStatus(t, "R");
 
-                Task.Run(async () =>
+                async Task Respond()
                 {
 
                     UpdateStatus(t, "T");
@@ -109,11 +112,24 @@ namespace AsyncAsDesigned.PerfAppServer
                     await NamedPipeClient.SendAsync(NamedPipeClient.DataServerListenPipe, t).ConfigureAwait(false);
                     UpdateStatus(t, "D");
 
-                    await listenToDataServer.StartAsync(true).ConfigureAwait(false);
-                    UpdateStatus(t, "F");
-                });
+                    if (!t.End)
+                    {
+                        await listenToDataServer.StartAsync(true).ConfigureAwait(false);
+                    }
 
-                return Task.CompletedTask;
+                    UpdateStatus(t, "F");
+                }
+
+                var waitForDataServerTask = Task.Run(() => Respond());
+
+                if (!t.End)
+                {
+                    return Task.CompletedTask;
+                } else
+                {
+                    return waitForDataServerTask;
+                }
+
             };
 
             await listenToClient.StartAsync().ConfigureAwait(false);

@@ -27,15 +27,22 @@ namespace AsyncAsDesigned.PerfDataServer
 
                 UpdateStatus(t, "R");
 
-                Task.Run(async () =>
+                if (!t.End)
                 {
-                    UpdateStatus(t, "T");
-                    await Task.Delay(1000).ConfigureAwait(false);
-                    UpdateStatus(t, "D");
-                    await NamedPipeClient.SendAsync(t.DataServerToAppServer, t).ConfigureAwait(false);
-                    UpdateStatus(t, "F");
-                });
+                    async Task respond()
+                    {
+                        UpdateStatus(t, "T");
+                        await Task.Delay(1000).ConfigureAwait(false);
+                        UpdateStatus(t, "D");
+                        await NamedPipeClient.SendAsync(t.DataServerToAppServer, t).ConfigureAwait(false);
+                        UpdateStatus(t, "F");
+                    };
+
+                    Task.Run(() => respond());
+                }
+
                 return Task.CompletedTask;
+
             };
 
             await listenToAppServer.StartAsync().ConfigureAwait(false);

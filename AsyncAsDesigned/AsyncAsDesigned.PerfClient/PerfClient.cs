@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -29,6 +30,22 @@ namespace AsyncAsDesigned.PerfClient
 
             List<Task> sendTasks = new List<Task>();
 
+            async Task Listen(Token token)
+            {
+
+                var listen = new NamedPipeServerAsync(token.AppServerToClient);
+
+                listen.TokenReceivedEventAsync += (t) =>
+                {
+                    UpdateStatus(token, "R");
+                    return Task.CompletedTask;
+                };
+
+                await listen.StartAsync(true).ConfigureAwait(false);
+
+            }
+
+
             for (var i = 0; i < numToSend; i++)
             {
 
@@ -38,31 +55,20 @@ namespace AsyncAsDesigned.PerfClient
 
                 UpdateStatus(token, "S");
 
-                // Question: Why isn't the client responding quicker??
-                sendTasks.Add(Task.Run(async () =>
-                {
+                sendTasks.Add(Task.Run(() => Listen(token)));
 
-                    UpdateStatus(token, "T");
-
-                    var listen = new NamedPipeServerAsync(token.AppServerToClient);
-
-                    listen.TokenReceivedEventAsync += (t) =>
-                    {
-                        UpdateStatus(token, "R");
-                        return Task.CompletedTask;
-                    };
-
-                    await listen.StartAsync(true);
-
-                }));
             }
 
             await Task.WhenAll(sendTasks.ToArray()).ConfigureAwait(false);
 
             sw.Stop();
 
-            Console.WriteLine($"Completed {sw.Elapsed.Seconds} seconds");
-            Console.ReadKey();
+            await NamedPipeClient.SendAsync(NamedPipeClient.AppServerListenPipe, new Token(true)).ConfigureAwait(false);
+
+            Console.WriteLine($"{sw.Elapsed.TotalSeconds}");
+            //Console.ReadKey();
+
+            File.AppendAllLines(@"..\Results.txt", new string[] { $"{numToSend}  {sw.Elapsed.TotalMilliseconds}" });
 
         }
 

@@ -11,11 +11,9 @@ namespace AsyncServerPerformance
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
 
             ThreadPool.GetMinThreads(out var workerThreads, out var asyncThreads);
 
-            Console.WriteLine($"Min Worker: {workerThreads} Min Async {asyncThreads}");
 
             ThreadPool.SetMaxThreads(workerThreads, asyncThreads);
 
