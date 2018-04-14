@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipes;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -25,19 +26,12 @@ namespace AsyncAsDesigned.PerfLib
             this.pipeName = pipeName;
         }
 
-        public void Start(bool oneMessage = false)
-        {
-            StartAsync(oneMessage).Wait();
-        }
 
-        public Task StartAsync(bool oneMessage = false)
+        public async Task StartAsync(bool oneMessage = false)
         {
-            return Listen(oneMessage);
-        }
 
-        private async Task Listen(bool oneMessage = false)
-        {
             Token token = null;
+            List<Task> tokenReceivedEventTasks = new List<Task>();
 
             do
             {
@@ -73,10 +67,14 @@ namespace AsyncAsDesigned.PerfLib
 
                 if (token != null && !token.End)
                 {
-                    await (TokenReceivedEventAsync?.Invoke(token) ?? Task.CompletedTask).ConfigureAwait(false);
+                    // We do not await - Don't wait for the task to complete before waiting for another message
+                    tokenReceivedEventTasks.Add((TokenReceivedEventAsync?.Invoke(token) ?? Task.CompletedTask));
                 }
             }
             while (!(token?.End ?? false) && !oneMessage && !closed);
+
+            // Don't exit the method though until all of the tasks have completed
+            await Task.WhenAll(tokenReceivedEventTasks);
 
         }
 

@@ -53,26 +53,22 @@ namespace AsyncAsDesigned.PerfClient
 
                 var token = new Token(i);
 
-                await NamedPipeClient.SendAsync(appServerPipeName, token).ConfigureAwait(false);
+                await NamedPipeClientAsync.SendAsync(appServerPipeName, token).ConfigureAwait(false);
 
                 UpdateStatus(token, "S");
 
-                sendTasks.Add(Task.Run(() => Listen(token)));
+                sendTasks.Add(Listen(token));
 
             }
 
             await Task.WhenAll(sendTasks.ToArray()).ConfigureAwait(false);
 
-            await NamedPipeClient.SendAsync(appServerPipeName, new Token(true)).ConfigureAwait(false);
-
             if (received != numToSend) { throw new Exception($"Failure: Number sent {numToSend} Number received {received}"); }
 
-#if DEBUG
-            Console.ReadKey();
-#endif
+            // Send Token.End = true token to shut down the AppServer (but not the DataServer in case there are multiple clients)
+            await NamedPipeClientAsync.SendAsync(appServerPipeName, new Token(true)).ConfigureAwait(false);
+
             Exception ex = null;
-
-
 
             Console.WriteLine($"End Client {appServerPipeName}");
 

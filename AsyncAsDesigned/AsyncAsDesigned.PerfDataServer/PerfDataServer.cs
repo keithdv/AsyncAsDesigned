@@ -18,7 +18,7 @@ namespace AsyncAsDesigned.PerfDataServer
 
             ConsoleOutput.ConsoleWriteLine("DataServer");
 
-            NamedPipeServerAsync listenToAppServer = new NamedPipeServerAsync(NamedPipeClient.DataServerListenPipe);
+            NamedPipeServerAsync listenToAppServer = new NamedPipeServerAsync(NamedPipeClientSync.DataServerListenPipe);
 
             TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
 
@@ -30,15 +30,13 @@ namespace AsyncAsDesigned.PerfDataServer
                 async Task respond()
                 {
                     UpdateStatus(t, "T");
-                    await Task.Delay(300).ConfigureAwait(false);
+                    await Task.Delay(3000).ConfigureAwait(false);
                     UpdateStatus(t, "D");
-                    await NamedPipeClient.SendAsync(t.DataServerToAppServer, t).ConfigureAwait(false);
+                    await NamedPipeClientAsync.SendAsync(t.DataServerToAppServer, t).ConfigureAwait(false);
                     UpdateStatus(t, "F");
                 };
 
-                Task.Run(() => respond());
-
-                return Task.CompletedTask;
+                return respond();
 
             };
 
@@ -51,7 +49,7 @@ namespace AsyncAsDesigned.PerfDataServer
 #if DEBUG
             lock (statusLock)
             {
-                while(t.AppServerID >= status.Count)
+                while (t.AppServerID >= status.Count)
                 {
                     status.Add("_");
                 }

@@ -21,7 +21,9 @@ namespace AsyncAsDesigned.PerfClient
             var numToSend = int.Parse(args[0]);
             var clientNumber = int.Parse(args[1]);
 
-            await PerfClient.RunAsync(numToSend, $@"{NamedPipeClient.AppServerListenPipe}\{clientNumber}");
+            var pipeName = string.Format(NamedPipeClientSync.AppServerListenPipe, clientNumber);
+
+            await PerfClient.RunAsync(numToSend, pipeName);
 
         }
     }

@@ -42,7 +42,7 @@ namespace AsyncAsDesigned.PerfLib.Test
 
             var task = Task.Run(() => namedPipeServer.StartAsync());
 
-            await NamedPipeClient.SendAsync(pipeName, token);
+            await NamedPipeClientAsync.SendAsync(pipeName, token);
 
             autoResetEvent.WaitOne(1000);
 
@@ -75,8 +75,8 @@ namespace AsyncAsDesigned.PerfLib.Test
             var task = Task.Run(() => namedPipeServer.StartAsync());
 
 
-            await NamedPipeClient.SendAsync(pipeName, token[0]).ConfigureAwait(false);
-            await NamedPipeClient.SendAsync(pipeName, token[1]).ConfigureAwait(false);
+            await NamedPipeClientAsync.SendAsync(pipeName, token[0]).ConfigureAwait(false);
+            await NamedPipeClientAsync.SendAsync(pipeName, token[1]).ConfigureAwait(false);
 
             autoResetEvent.WaitOne(1000);
 
@@ -111,8 +111,8 @@ namespace AsyncAsDesigned.PerfLib.Test
             var task = Task.Run(() => namedPipeServer.StartAsync());
 
 
-            await NamedPipeClient.SendAsync(pipeName, token[0]);
-            await NamedPipeClient.SendAsync(pipeName, token[1]);
+            await NamedPipeClientAsync.SendAsync(pipeName, token[0]);
+            await NamedPipeClientAsync.SendAsync(pipeName, token[1]);
 
             await taskCompletionSource.Task;
 
@@ -148,7 +148,7 @@ namespace AsyncAsDesigned.PerfLib.Test
                 autoResetEvent.Set();
             });
 
-            await NamedPipeClient.SendAsync(pipeName, token);
+            await NamedPipeClientAsync.SendAsync(pipeName, token);
 
             autoResetEvent.WaitOne(1000);
 
