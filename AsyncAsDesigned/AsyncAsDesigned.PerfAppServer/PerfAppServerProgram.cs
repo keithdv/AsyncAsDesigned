@@ -20,27 +20,29 @@ namespace AsyncAsDesigned.PerfAppServer
             // But .NET is well aware of the cost of threads
             // ThreadPool.SetMinThreads(40, 40);
 
-            if (args.Length != 2)
+            if (args.Length != 3)
             {
                 throw new Exception("Invalid number of command line arguments");
             }
 
             bool isAsync = args[0] == "async";
             int numClients = int.Parse(args[1]);
+            string uniquePipeName = args[2];
+
             Task[] runTasks = new Task[numClients];
 
             for (var i = 0; i < numClients; i++)
             {
-
-                var pipeName = string.Format(NamedPipeClientSync.AppServerListenPipe, i + 1);
+                var pipeName = NamedPipeClientSync.AppServerListenPipe(i + 1, uniquePipeName);
+                var dataServerPipeName = NamedPipeClientSync.DataServerListenPipe(i + 1, uniquePipeName);
 
                 if (!isAsync)
                 {
-                    runTasks[i] = Task.Run(() => PerfAppServerSync.Run(pipeName));
+                    runTasks[i] = Task.Run(() => PerfAppServerSync.Run(pipeName, dataServerPipeName));
                 }
                 else
                 {
-                    runTasks[i] = PerfAppServerAsync.RunAsync(pipeName);
+                    runTasks[i] = PerfAppServerAsync.RunAsync(pipeName, dataServerPipeName);
                 }
             }
 
@@ -55,8 +57,9 @@ namespace AsyncAsDesigned.PerfAppServer
 
             Stop = DateTime.Now;
 
+
             // CLose the DataServer
-            await NamedPipeClientAsync.SendAsync(NamedPipeClientSync.DataServerListenPipe, new Token(true)).ConfigureAwait(false);
+//            await NamedPipeClientAsync.SendAsync(NamedPipeClientSync.DataServerListenPipe(uniquePipeName), new Token(true)).ConfigureAwait(false);
 
             Console.WriteLine($"Clients: {numClients} Count: {(isAsync ? PerfAppServerAsync.ID : PerfAppServerSync.ID)} Elapsed Time: {(Stop.Value - Start.Value).TotalMilliseconds}");
 

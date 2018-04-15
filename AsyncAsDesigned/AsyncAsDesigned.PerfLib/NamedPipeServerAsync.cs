@@ -35,7 +35,7 @@ namespace AsyncAsDesigned.PerfLib
 
             do
             {
-                using (var pipeServer = new NamedPipeServerStream(pipeName, PipeDirection.InOut, NamedPipeServerStream.MaxAllowedServerInstances, PipeTransmissionMode.Byte, PipeOptions.Asynchronous))
+                using (var pipeServer = new NamedPipeServerStream(pipeName, PipeDirection.In, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous))
                 {
                     lock (lockCancel)
                     {
@@ -65,7 +65,7 @@ namespace AsyncAsDesigned.PerfLib
 
                 }
 
-                if (token != null && !token.End)
+                if (token != null)
                 {
                     // We do not await - Don't wait for the task to complete before waiting for another message
                     tokenReceivedEventTasks.Add((TokenReceivedEventAsync?.Invoke(token) ?? Task.CompletedTask));

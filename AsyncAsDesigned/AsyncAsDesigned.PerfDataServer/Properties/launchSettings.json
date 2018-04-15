@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "AsyncAsDesigned.PerfDataServer": {
+      "commandName": "Project",
+      "commandLineArgs": "1 uniquekey"
+    }
+  }
+}

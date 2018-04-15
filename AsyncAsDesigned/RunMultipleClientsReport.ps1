@@ -1,4 +1,17 @@
 
+function startProcess ($dir, $cmdArgs) {
+
+ $ProcessInfo = New-Object System.Diagnostics.ProcessStartInfo
+ $ProcessInfo.FileName = "dotnet"
+ $ProcessInfo.WorkingDirectory = (Resolve-Path -Path $dir)
+ $ProcessInfo.Arguments = $cmdArgs
+ $ProcessInfo.UseShellExecute = $False
+ $ProcessInfo.WindowStyle = [System.Diagnostics.ProcessWindowStyle]::Hidden
+ $newProcess = [System.Diagnostics.Process]::Start($ProcessInfo)
+ $newProcess.PriorityClass = [System.Diagnostics.ProcessPriorityClass]::RealTime
+ $newProcess
+}
+
 #Set the working directory to the location of the script
 $path = $MyInvocation.MyCommand.Path
 $dir = Split-Path $path
@@ -10,45 +23,71 @@ Push-Location $dir
 
 
 Stop-Process -Name "dotnet"
-   
-Start-Process -WindowStyle Hidden  "dotnet" -WorkingDirectory .\AsyncAsDesigned.PerfDataServer -ArgumentList "build", "--configuration Release", "/maxcpucount:1"
-Start-Process -WindowStyle Hidden  "dotnet" -WorkingDirectory .\AsyncAsDesigned.PerfClient -ArgumentList "build", "--configuration Release"
-Start-Process -WindowStyle Hidden  "dotnet" -WorkingDirectory .\AsyncAsDesigned.PerfAppServer -ArgumentList "build", "--configuration Release"
 
-#Can't wait the above
-#https://github.com/Microsoft/msbuild/issues/2269
 
-Start-Sleep 30
+  
+(startProcess -dir "AsyncAsDesigned.PerfDataServer" -cmdArgs "build", "--configuration Release").WaitForExit();
+(startProcess -dir "AsyncAsDesigned.PerfClient" -cmdArgs "build", "--configuration Release").WaitForExit();
+(startProcess -dir "AsyncAsDesigned.PerfAppServer" -cmdArgs "build", "--configuration Release").WaitForExit();
 
-for($num = 1; $num -le 15; $num++){
 
+$count = 0;
+$processes = @();
+$guid = New-Guid
+
+while($true){
+
+
+    for($num = 1; $num -le 15; $num++){
+
+        $processes = @();
 
     
-    Start-Process -WindowStyle Hidden  "dotnet" -WorkingDirectory .\AsyncAsDesigned.PerfDataServer -ArgumentList "run", "--configuration Release", "--no-build"
+        For($i=1; $i -le $num; $i++)
+        {
+            $processes += startProcess -dir .\AsyncAsDesigned.PerfClient -cmdArgs "run", "--configuration Release", "--no-build", "25", "$i", "$guid"
+            $processes += startProcess -dir .\AsyncAsDesigned.PerfDataServer -cmdArgs "run", "--configuration Release", "--no-build", "$i", "$guid"
+        }
 
-    For($i=1; $i -le $num; $i++)
-    {
-        Start-Process -WindowStyle Hidden  "dotnet" -WorkingDirectory .\AsyncAsDesigned.PerfClient -ArgumentList "run", "--configuration Release", "--no-build", "25", "$i"
+        # Wait for everything to startup (Probably unneccessary)
+        Start-Sleep 2
+
+        $appProcess = startProcess -dir .\AsyncAsDesigned.PerfAppServer -cmdArgs "run", "--configuration Release", "--no-build", "sync", "$num", "$guid"
+        $appProcess.WaitForExit();
+
+        foreach($b in $processes){ $b.WaitForExit(); }
+
+        Write-Output "$num sync is done"
+
+        $processes = @();
+
+        For($i=1; $i -le $num; $i++)
+        {
+            $processes += startProcess -dir .\AsyncAsDesigned.PerfClient -cmdArgs "run", "--configuration Release", "--no-build", "25", "$i", "$guid"
+            $processes += startProcess -dir .\AsyncAsDesigned.PerfDataServer -cmdArgs "run", "--configuration Release", "--no-build", "$i", "$guid"
+        }
+
+        # Wait for everything to startup (Probably unneccessary)
+        Start-Sleep 2
+
+        $appProcess = startProcess -dir .\AsyncAsDesigned.PerfAppServer -cmdArgs "run", "--configuration Release", "--no-build", "async", "$num", "$guid"
+        $appProcess.WaitForExit();
+
+
+        foreach($b in $processes){ $b.WaitForExit(); }
+
+
+        Write-Output "$num async is done"
+        
+
     }
 
+    $count++;
 
-    Start-Process -Wait -WindowStyle Normal  "dotnet" -WorkingDirectory .\AsyncAsDesigned.PerfAppServer -ArgumentList "run", "--configuration Release", "--no-build", "sync", "$num"
+        Write-Output "Full Set is done $count"
 
-    Start-Sleep -Seconds 30
-
-    Start-Process -WindowStyle Hidden  "dotnet" -WorkingDirectory .\AsyncAsDesigned.PerfDataServer -ArgumentList "run", "--configuration Release", "--no-build"
-
-    For($i=1; $i -le $num; $i++)
-    {
-        Start-Process -WindowStyle Hidden  "dotnet" -WorkingDirectory .\AsyncAsDesigned.PerfClient -ArgumentList "run", "--configuration Release", "--no-build", "25", "$i"
-    }
-
-
-    Start-Process -Wait -WindowStyle Normal  "dotnet" -WorkingDirectory .\AsyncAsDesigned.PerfAppServer -ArgumentList "run", "--configuration Release", "--no-build", "async", "$num"
-
-    Write-Output "$num is done"
-
-    Start-Sleep 30
+        Start-Sleep 15
 
 }
+
 

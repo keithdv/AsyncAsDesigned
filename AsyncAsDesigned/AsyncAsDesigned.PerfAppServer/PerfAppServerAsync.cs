@@ -14,58 +14,60 @@ namespace AsyncAsDesigned.PerfAppServer
 
         public static int ID = 0;
 
-        public static async Task RunAsync(string pipeName)
+        public static async Task RunAsync(string listenPipeName, string dataServerPipeName)
         {
-            Console.WriteLine($"Start AppServer Async {pipeName}");
+            Console.WriteLine($"Start AppServer Async {listenPipeName}");
 
-            NamedPipeServerAsync listenToClient = new NamedPipeServerAsync(pipeName);
-
-            object lockId = new object();
-
-            listenToClient.TokenReceivedEventAsync += (t) =>
+            using (NamedPipeServerAsync listenToClient = new NamedPipeServerAsync(listenPipeName))
             {
-                // Start the time when the first value comes in from the first client
-                if (!Program.Start.HasValue) { Program.Start = ConsoleOutput.StartTime = DateTime.Now; }
 
-                lock (lockId)
+                object lockId = new object();
+
+                listenToClient.TokenReceivedEventAsync += (t) =>
                 {
-                    t.AppServerID = ID;
-                    ID++;
-                }
+                    // Start the time when the first value comes in from the first client
+                    if (!Program.Start.HasValue) { Program.Start = ConsoleOutput.StartTime = DateTime.Now; }
 
-                ConsoleOutput.UpdateStatus(t, "R");
-
-                async Task Respond()
-                {
-
-                    ConsoleOutput.UpdateStatus(t, "T");
-
-
-                    NamedPipeServerAsync listenToDataServer = new NamedPipeServerAsync(t.DataServerToAppServer);
-
-                    listenToDataServer.TokenReceivedEventAsync += async (t2) =>
+                    lock (lockId)
                     {
-                        ConsoleOutput.UpdateStatus(t2, "C");
-                        await NamedPipeClientAsync.SendAsync(t2.AppServerToClient, t2).ConfigureAwait(false);
-                    };
+                        t.AppServerID = ID;
+                        ID++;
+                    }
 
-                    await NamedPipeClientAsync.SendAsync(NamedPipeClientSync.DataServerListenPipe, t).ConfigureAwait(false);
+                    ConsoleOutput.UpdateStatus(t, "R");
 
-                    ConsoleOutput.UpdateStatus(t, "D");
+                    async Task Respond()
+                    {
 
-                    await listenToDataServer.StartAsync(true).ConfigureAwait(false);
+                        ConsoleOutput.UpdateStatus(t, "T");
 
-                    ConsoleOutput.UpdateStatus(t, "F");
 
-                }
+                        NamedPipeServerAsync listenToDataServer = new NamedPipeServerAsync(t.DataServerToAppServer);
 
-                return Respond();
+                        listenToDataServer.TokenReceivedEventAsync += async (t2) =>
+                        {
+                            ConsoleOutput.UpdateStatus(t2, "C");
+                            await NamedPipeClientAsync.SendAsync(t2.AppServerToClient, t2).ConfigureAwait(false);
+                        };
 
-            };
+                        await NamedPipeClientAsync.SendAsync(dataServerPipeName, t).ConfigureAwait(false);
 
-            await listenToClient.StartAsync().ConfigureAwait(false);
+                        ConsoleOutput.UpdateStatus(t, "D");
 
-            Console.WriteLine($"End AppServer {pipeName}");
+                        await listenToDataServer.StartAsync(true).ConfigureAwait(false);
+
+                        ConsoleOutput.UpdateStatus(t, "F");
+
+                    }
+
+                    return Respond();
+
+                };
+
+                await listenToClient.StartAsync().ConfigureAwait(false);
+
+            }
+            Console.WriteLine($"End AppServer {listenPipeName}");
 
         }
 

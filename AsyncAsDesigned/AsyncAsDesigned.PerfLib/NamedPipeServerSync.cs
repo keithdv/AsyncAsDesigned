@@ -31,7 +31,7 @@ namespace AsyncAsDesigned.PerfLib
 
             do
             {
-                using (var pipeServer = new NamedPipeServerStream(pipeName, PipeDirection.InOut, NamedPipeServerStream.MaxAllowedServerInstances, PipeTransmissionMode.Byte, PipeOptions.None))
+                using (var pipeServer = new NamedPipeServerStream(pipeName, PipeDirection.In, 1, PipeTransmissionMode.Byte, PipeOptions.None))
                 {
 
                     pipeServer.WaitForConnection();
@@ -42,7 +42,7 @@ namespace AsyncAsDesigned.PerfLib
 
                 }
 
-                if (token != null && !token.End)
+                if (token != null)
                 {
                     tokenReceivedEventTasks.Add(TokenReceivedEvent?.Invoke(token));
                 }

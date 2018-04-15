@@ -12,13 +12,24 @@ namespace AsyncAsDesigned.PerfLib
     public static class NamedPipeClientSync
     {
 
-        public const string AppServerListenPipe = @"\\AsyncAsDesigned\AppServerListenPipeSync\{0}";
-        public const string DataServerListenPipe = @"\\AsyncAsDesigned\DataServerListenPipeSync";
+
+        public static string AppServerListenPipe(int clientID, string uniqueID)
+        {
+            return string.Format(_appServerListenPipe, uniqueID, clientID);
+        }
+
+        public static string DataServerListenPipe(int clientID, string uniqueID)
+        {
+            return string.Format(_dataServerListenPipe, uniqueID, clientID);
+        }
+
+        private const string _appServerListenPipe = @"\\AsyncAsDesigned\AppServerListenPipeSync\{0}\{1}";
+        private const string _dataServerListenPipe = @"\\AsyncAsDesigned\DataServerListenPipeSync\{0}\{1}";
 
         public static void Send(string pipeName, Token token)
         {
 
-            using (NamedPipeClientStream pipeClient = new NamedPipeClientStream(".", pipeName, PipeDirection.Out, PipeOptions.Asynchronous))
+            using (NamedPipeClientStream pipeClient = new NamedPipeClientStream(".", pipeName, PipeDirection.Out, PipeOptions.None))
             {
 
                 pipeClient.Connect();

@@ -36,9 +36,12 @@ namespace AsyncAsDesigned.PerfClient
                 listen.TokenReceivedEventAsync += (t) =>
                 {
                     UpdateStatus(token, "R");
-                    lock (receivedLock)
+                    if (!t.End)
                     {
-                        received++;
+                        lock (receivedLock)
+                        {
+                            received++;
+                        }
                     }
                     return Task.CompletedTask;
                 };
@@ -63,12 +66,14 @@ namespace AsyncAsDesigned.PerfClient
 
             await Task.WhenAll(sendTasks.ToArray()).ConfigureAwait(false);
 
-            if (received != numToSend) { throw new Exception($"Failure: Number sent {numToSend} Number received {received}"); }
+            Console.WriteLine($"Send End Token");
 
             // Send Token.End = true token to shut down the AppServer (but not the DataServer in case there are multiple clients)
-            await NamedPipeClientAsync.SendAsync(appServerPipeName, new Token(true)).ConfigureAwait(false);
+            var endToken = new Token(true);
+            await NamedPipeClientAsync.SendAsync(appServerPipeName, endToken).ConfigureAwait(false);
+            await Listen(endToken);
 
-            Exception ex = null;
+            if (received != numToSend) { throw new Exception($"Failure: Number sent {numToSend} Number received {received}"); }
 
             Console.WriteLine($"End Client {appServerPipeName}");
 

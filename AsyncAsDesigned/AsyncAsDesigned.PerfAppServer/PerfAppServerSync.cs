@@ -15,13 +15,13 @@ namespace AsyncAsDesigned.PerfAppServer
 
 
 
-        public static void Run(string pipeName)
+        public static void Run(string listenPipeName, string dataserverPipeName)
         {
-            Console.WriteLine($"Start AppServer Sync {pipeName}");
+            Console.WriteLine($"Start AppServer Sync {listenPipeName}");
 
             object lockId = new object();
 
-            NamedPipeServerSync listenToClient = new NamedPipeServerSync(pipeName);
+            NamedPipeServerSync listenToClient = new NamedPipeServerSync(listenPipeName);
 
             listenToClient.TokenReceivedEvent += (t) =>
             {
@@ -56,7 +56,7 @@ namespace AsyncAsDesigned.PerfAppServer
                         });
                     };
 
-                    NamedPipeClientSync.Send(NamedPipeClientSync.DataServerListenPipe, t); // Blocks Thread until the message is sent to the data server
+                    NamedPipeClientSync.Send(dataserverPipeName, t); // Blocks Thread until the message is sent to the data server
                     ConsoleOutput.UpdateStatus(t, "D"); // D - Waiting for DataServer (DataServer purposefully delays)
 
                     listenToDataServer.Start(true);
@@ -69,7 +69,7 @@ namespace AsyncAsDesigned.PerfAppServer
 
             listenToClient.Start();
 
-            Console.WriteLine($"End AppServer {pipeName}");
+            Console.WriteLine($"End AppServer {listenPipeName}");
 
         }
 

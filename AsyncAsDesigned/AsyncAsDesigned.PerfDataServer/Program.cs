@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AsyncAsDesigned.PerfLib;
+using System;
 using System.Threading.Tasks;
 
 namespace AsyncAsDesigned.PerfDataServer
@@ -7,7 +8,19 @@ namespace AsyncAsDesigned.PerfDataServer
     {
         static async Task Main(string[] args)
         {
-            await PerfDataServer.RunAsync();
+
+            if(args.Length != 2)
+            {
+                throw new Exception("Invalid number of command line args");
+            }
+
+            int clientID = int.Parse(args[0]);
+            string uniquePipeName = args[1];
+
+            var pipeName = NamedPipeClientSync.DataServerListenPipe(clientID, uniquePipeName);
+            Console.WriteLine($"DataServer: {pipeName}");
+
+            await PerfDataServer.RunAsync(pipeName);
         }
     }
 }
