@@ -15,7 +15,7 @@ namespace AsyncAsDesigned.PerfLib
         static BinaryFormatter formatter = new BinaryFormatter();
 
 
-        public delegate Task TokenReceived(Token token);
+        public delegate void TokenReceived(Token token);
         public event TokenReceived TokenReceivedEvent;
 
         public NamedPipeServerSync(string pipeName)
@@ -25,12 +25,15 @@ namespace AsyncAsDesigned.PerfLib
 
         public void Start(bool oneMessage = false)
         {
-            
-            Token token = null;
-            List<Task> tokenReceivedEventTasks = new List<Task>();
 
+            object tokenListLock = new object();
+            List<Task> tokenReceivedEventTasks = new List<Task>();
+            bool end = false;
             do
             {
+
+                Token token = null;
+
                 using (var pipeServer = new NamedPipeServerStream(pipeName, PipeDirection.In, 1, PipeTransmissionMode.Byte, PipeOptions.None))
                 {
 
@@ -44,12 +47,15 @@ namespace AsyncAsDesigned.PerfLib
 
                 if (token != null)
                 {
-                    tokenReceivedEventTasks.Add(TokenReceivedEvent?.Invoke(token));
+                    end = token.End;
+                    lock (tokenListLock)
+                    {
+                        tokenReceivedEventTasks.Add(Task.Run(() => TokenReceivedEvent?.Invoke(token)));
+                    }
                 }
             }
-            while (!(token?.End ?? false) && !oneMessage);
+            while (!end && !oneMessage);
 
-            // Ensure that we wait for the DataServer to respond for any pending Tasks
             Task.WaitAll(tokenReceivedEventTasks.ToArray());
 
         }

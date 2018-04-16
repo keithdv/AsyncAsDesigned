@@ -35,7 +35,7 @@ namespace AsyncAsDesigned.PerfLib
 
         }
 
-        public static void UpdateStatus(Token t, string s)
+        public static void UpdateStatus(string label, Token t, string s)
         {
 
 #if DEBUG
@@ -51,7 +51,7 @@ namespace AsyncAsDesigned.PerfLib
                     status[t.AppServerID] = s;
 
                     Console.BackgroundColor = ConsoleColor.Black;
-                    ConsoleOutput.ConsoleWrite($"AppServer: ");
+                    ConsoleOutput.ConsoleWrite(label);
 
                     for (var i = 0; i < status.Count; i++)
                     {

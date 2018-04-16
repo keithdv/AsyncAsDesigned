@@ -22,24 +22,21 @@ namespace AsyncAsDesigned.PerfDataServer
 
             TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
 
-            listenToAppServer.TokenReceivedEventAsync += (t) =>
+            listenToAppServer.TokenReceivedEventAsync += async (t) =>
             {
 
                 UpdateStatus(t, "R");
 
-                async Task respond()
+                if (!t.End)
                 {
-                    UpdateStatus(t, "T");
-                    if (!t.End)
-                    {
-                        await Task.Delay(500).ConfigureAwait(false);
-                    }
-                    UpdateStatus(t, "D");
-                    await NamedPipeClientAsync.SendAsync(sendToAppServerPipeName, t).ConfigureAwait(false);
-                    UpdateStatus(t, "F");
-                };
+                    await Task.Delay(500).ConfigureAwait(false);
+                }
 
-                return respond();
+                UpdateStatus(t, "D");
+
+                await NamedPipeClientAsync.SendAsync(sendToAppServerPipeName, t).ConfigureAwait(false);
+
+                UpdateStatus(t, "F");
 
             };
 

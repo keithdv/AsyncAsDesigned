@@ -13,9 +13,9 @@ namespace AsyncAsDesigned.PerfAppServer
     {
         public static int Count = 0;
 
-        public static void Run(string clientListenPipeName, string clientSendPipeName, string dataserverListenPipeName, string dataserverSendPipeName)
+        public static void Run(int clientNumber, string clientListenPipeName, string clientSendPipeName, string dataserverListenPipeName, string dataserverSendPipeName)
         {
-            Console.WriteLine($"AppServer Sync Start {clientListenPipeName}");
+            Console.WriteLine($"AppServer Sync Start {clientNumber}");
 
             object lockId = new object();
 
@@ -24,7 +24,6 @@ namespace AsyncAsDesigned.PerfAppServer
 
             listenToClient.TokenReceivedEvent += (t) =>
             {
-
                 // Start the time when the first value comes in from the first client
                 if (!Program.Start.HasValue) { Program.Start = ConsoleOutput.StartTime = DateTime.Now; }
 
@@ -34,29 +33,19 @@ namespace AsyncAsDesigned.PerfAppServer
                     t.AppServerID = Count;
                 }
 
-                ConsoleOutput.UpdateStatus(t, "R"); // R - Message Received
+                ConsoleOutput.UpdateStatus("AppServer Sync: ", t, "R"); // R - Message Received
 
-                // Spawn a new thread with each incoming message
-                // So that it's fast!!! Right?
-                return Task.Run(() =>
-                {
-                    ConsoleOutput.UpdateStatus(t, "T"); // T - Thread Started
+                NamedPipeClientSync.Send(dataserverSendPipeName, t); // Blocks Thread until the message is sent to the data server
 
-                    NamedPipeClientSync.Send(dataserverSendPipeName, t); // Blocks Thread until the message is sent to the data server
-                    ConsoleOutput.UpdateStatus(t, "D"); // D - Waiting for DataServer (DataServer purposefully delays)
-
-                });
+                ConsoleOutput.UpdateStatus("AppServer Sync: ", t, "D"); // D - Waiting for DataServer (DataServer purposefully delays)
 
             };
 
             listenToDataServer.TokenReceivedEvent += (t) =>
             {
-                return Task.Run(() =>
-                {
-                    ConsoleOutput.UpdateStatus(t, "C"); // C - Respond to client
-                    NamedPipeClientSync.Send(clientSendPipeName, t); // Blocks Thread until the message is sent to the client
-                    ConsoleOutput.UpdateStatus(t, "F"); // F - Finished
-                });
+                ConsoleOutput.UpdateStatus("AppServer Sync: ", t, "C"); // C - Respond to client
+                NamedPipeClientSync.Send(clientSendPipeName, t); // Blocks Thread until the message is sent to the client
+                ConsoleOutput.UpdateStatus("AppServer Sync: ", t, "F"); // F - Finished
             };
 
 
@@ -67,7 +56,7 @@ namespace AsyncAsDesigned.PerfAppServer
 
             Task.WaitAll(listenTasks);
 
-            Console.WriteLine($"AppServer Sync End {clientListenPipeName}");
+            //Console.WriteLine($"AppServer Sync End {clientNumber}");
 
         }
 

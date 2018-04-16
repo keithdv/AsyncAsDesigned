@@ -40,14 +40,15 @@ namespace AsyncAsDesigned.PerfAppServer
                     var appServerToClientPipeName = NamedPipeClientSync.AppServerToClientPipeName(i + 1, uniquePipeName);
                     var appServerToDataServerPipeName = NamedPipeClientSync.AppServerToDataServerPipeName(i + 1, uniquePipeName);
                     var dataServerToAppServerPipeName = NamedPipeClientSync.DataServerToAppServerPipeName(i + 1, uniquePipeName);
+                    var clientNum = i + 1;
 
                     if (!isAsync)
                     {
-                        runTasks[i] = Task.Run(() => PerfAppServerSync.Run(clientToAppServerPipeName, appServerToClientPipeName, dataServerToAppServerPipeName, appServerToDataServerPipeName));
+                        runTasks[i] = Task.Run(() => PerfAppServerSync.Run(clientNum, clientToAppServerPipeName, appServerToClientPipeName, dataServerToAppServerPipeName, appServerToDataServerPipeName));
                     }
                     else
                     {
-                        runTasks[i] = PerfAppServerAsync.RunAsync(clientToAppServerPipeName, appServerToClientPipeName, dataServerToAppServerPipeName, appServerToDataServerPipeName);
+                        runTasks[i] = PerfAppServerAsync.RunAsync(clientNum, clientToAppServerPipeName, appServerToClientPipeName, dataServerToAppServerPipeName, appServerToDataServerPipeName);
                     }
                 }
 

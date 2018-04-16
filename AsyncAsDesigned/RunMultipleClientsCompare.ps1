@@ -27,24 +27,23 @@ Stop-Process -Name "dotnet" -ErrorAction SilentlyContinue
   
 (startProcess -dir "AsyncAsDesigned.PerfDataServer" -cmdArgs "build", "--configuration Release").WaitForExit();
 (startProcess -dir "AsyncAsDesigned.PerfClient" -cmdArgs "build", "--configuration Release").WaitForExit();
-(startProcess -dir "AsyncAsDesigned.PerfAppServer" -cmdArgs "build", "--configuration Release").WaitForExit();
+(startProcess -dir "AsyncAsDesigned.PerfAppServer" -cmdArgs "build", "--configuration Debug").WaitForExit();
 
 
-$count = 0;
+
 $processes = @();
 
-while($true){
 
     $syncGuid = New-Guid;
     $asyncGuid = New-Guid;
 
-    for($num = 2; $num -le 20; $num = $num + 2){
+    for($num = 3; $num -le 3; $num = $num + 1){
 
         $processes = @();
     
         For($i=1; $i -le $num; $i++)
         {
-            $processes += startProcess -dir .\AsyncAsDesigned.PerfClient -cmdArgs "run", "--configuration Release", "--no-build", "25", "$i", "$syncGuid"
+            $processes += startProcess -dir .\AsyncAsDesigned.PerfClient -cmdArgs "run", "--configuration Release", "--no-build", "10", "$i", "$syncGuid"
             Start-Sleep -Milliseconds 25
             $processes += startProcess -dir .\AsyncAsDesigned.PerfDataServer -cmdArgs "run", "--configuration Release", "--no-build", "$i", "$syncGuid"
             Start-Sleep -Milliseconds 25
@@ -53,61 +52,31 @@ while($true){
         # Wait for everything to startup (Probably unneccessary)
         Start-Sleep 1
 
-        $appProcess = startProcess -dir .\AsyncAsDesigned.PerfAppServer -cmdArgs "run", "--configuration Release", "--no-build", "sync", "$num", "$syncGuid"
-        $success = $appProcess.WaitForExit(600000);
+        $appProcessSync = startProcess -dir .\AsyncAsDesigned.PerfAppServer -cmdArgs "run", "--configuration Debug", "--no-build", "sync", "$num", "$syncGuid"
 
-        foreach($b in $processes){ $success = $success -and $b.WaitForExit(1000); }
-
-        if(!$success)
-        {
-            Write-Output "App Process Timeout $num";
-            Stop-Process -Name "dotnet" -ErrorAction SilentlyContinue
-            Add-Content ".\Results.txt" "Failure $num"
-        }
+        foreach($b in $processes){ $b.WaitForExit(); }
 
         Write-Output "$num sync is done"
-
-        # Wait for everything to startup (Probably unneccessary)
-        Start-Sleep 2
 
         $processes = @();
 
         For($i=1; $i -le $num; $i++)
         {
-            $processes += startProcess -dir .\AsyncAsDesigned.PerfClient -cmdArgs "run", "--configuration Release", "--no-build", "25", "$i", "$asyncGuid"
+            $processes += startProcess -dir .\AsyncAsDesigned.PerfClient -cmdArgs "run", "--configuration Release", "--no-build", "10", "$i", "$asyncGuid"
             Start-Sleep -Milliseconds 25
             $processes += startProcess -dir .\AsyncAsDesigned.PerfDataServer -cmdArgs "run", "--configuration Release", "--no-build", "$i", "$asyncGuid"
             Start-Sleep -Milliseconds 25
         }
 
-        # Wait for everything to startup (Probably unneccessary)
-        Start-Sleep 1
+        $appProcessAsync = startProcess -dir .\AsyncAsDesigned.PerfAppServer -cmdArgs "run", "--configuration Debug", "--no-build", "async", "$num", "$asyncGuid"
 
-        $appProcess = startProcess -dir .\AsyncAsDesigned.PerfAppServer -cmdArgs "run", "--configuration Release", "--no-build", "async", "$num", "$asyncGuid"
-        $success = $appProcess.WaitForExit(600000);
+        foreach($b in $processes){ $b.WaitForExit(); }
 
-        foreach($b in $processes){ $success = $success -and $b.WaitForExit(1000); }
-
-        if(!$success)
-        {
-            Write-Output "App Process Timeout $num";
-            Stop-Process -Name "dotnet" -ErrorAction SilentlyContinue
-            Add-Content ".\Results.txt" "Failure $num"
-        }
-
-
-        Write-Output "$num async is done"
-
-        # Wait for everything to startup (Probably unneccessary)
-        Start-Sleep 2
         
 
     }
 
-    $count++;
 
-    Write-Output "Full Set is done $count"
 
-}
 
 
