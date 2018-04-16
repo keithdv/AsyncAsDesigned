@@ -42,7 +42,6 @@ namespace AsyncAsDesigned.PerfLib
                         if (closed) { return; } // Comment this out, run all tests, SendReceiveMultiple blocks. 
                         cancelWaitForConnection = new CancellationTokenSource();
                     }
-
                     try
                     {
                         await pipeServer.WaitForConnectionAsync(cancelWaitForConnection.Token).ConfigureAwait(false);

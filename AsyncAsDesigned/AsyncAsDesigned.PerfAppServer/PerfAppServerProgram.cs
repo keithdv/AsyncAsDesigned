@@ -29,47 +29,59 @@ namespace AsyncAsDesigned.PerfAppServer
             int numClients = int.Parse(args[1]);
             string uniquePipeName = args[2];
 
-            Task[] runTasks = new Task[numClients];
-
-            for (var i = 0; i < numClients; i++)
+            try
             {
-                var pipeName = NamedPipeClientSync.AppServerListenPipe(i + 1, uniquePipeName);
-                var dataServerPipeName = NamedPipeClientSync.DataServerListenPipe(i + 1, uniquePipeName);
 
-                if (!isAsync)
+                Task[] runTasks = new Task[numClients];
+
+                for (var i = 0; i < numClients; i++)
                 {
-                    runTasks[i] = Task.Run(() => PerfAppServerSync.Run(pipeName, dataServerPipeName));
+                    var clientToAppServerPipeName = NamedPipeClientSync.ClientToAppServerPipeName(i + 1, uniquePipeName);
+                    var appServerToClientPipeName = NamedPipeClientSync.AppServerToClientPipeName(i + 1, uniquePipeName);
+                    var appServerToDataServerPipeName = NamedPipeClientSync.AppServerToDataServerPipeName(i + 1, uniquePipeName);
+                    var dataServerToAppServerPipeName = NamedPipeClientSync.DataServerToAppServerPipeName(i + 1, uniquePipeName);
+
+                    if (!isAsync)
+                    {
+                        runTasks[i] = Task.Run(() => PerfAppServerSync.Run(clientToAppServerPipeName, appServerToClientPipeName, dataServerToAppServerPipeName, appServerToDataServerPipeName));
+                    }
+                    else
+                    {
+                        runTasks[i] = PerfAppServerAsync.RunAsync(clientToAppServerPipeName, appServerToClientPipeName, dataServerToAppServerPipeName, appServerToDataServerPipeName);
+                    }
+                }
+
+                if (isAsync)
+                {
+                    await Task.WhenAll(runTasks);
                 }
                 else
                 {
-                    runTasks[i] = PerfAppServerAsync.RunAsync(pipeName, dataServerPipeName);
+                    Task.WaitAll(runTasks);
                 }
-            }
 
-            if (isAsync)
-            {
-                await Task.WhenAll(runTasks);
-            }
-            else
-            {
-                Task.WaitAll(runTasks);
-            }
-
-            Stop = DateTime.Now;
+                Stop = DateTime.Now;
 
 
-            // CLose the DataServer
-//            await NamedPipeClientAsync.SendAsync(NamedPipeClientSync.DataServerListenPipe(uniquePipeName), new Token(true)).ConfigureAwait(false);
+                // CLose the DataServer
+                //            await NamedPipeClientAsync.SendAsync(NamedPipeClientSync.DataServerListenPipe(uniquePipeName), new Token(true)).ConfigureAwait(false);
 
-            Console.WriteLine($"Clients: {numClients} Count: {(isAsync ? PerfAppServerAsync.ID : PerfAppServerSync.ID)} Elapsed Time: {(Stop.Value - Start.Value).TotalMilliseconds}");
+                Console.WriteLine($"Clients: {numClients} Count: {(isAsync ? PerfAppServerAsync.ID : PerfAppServerSync.Count)} Elapsed Time: {(Stop.Value - Start.Value).TotalMilliseconds}");
 
 #if !DEBUG
-            File.AppendAllLines($@"..\Results.txt", new string[] { $"{(isAsync ? "Async" : "Sync")} {numClients} {(isAsync ? PerfAppServerAsync.ID : PerfAppServerSync.ID)} {(Stop.Value - Start.Value).TotalMilliseconds}" });
+            File.AppendAllLines($@"..\Results.txt", new string[] { $"{(isAsync ? "Async" : "Sync")} {numClients} {(isAsync ? PerfAppServerAsync.ID : PerfAppServerSync.Count)} {(Stop.Value - Start.Value).TotalMilliseconds}" });
 #endif
 
 #if DEBUG
-            Console.ReadKey();
+                Console.ReadKey();
 #endif
+            }
+            catch (Exception ex)
+            {
+                File.AppendAllLines($@"..\Results.txt", new string[] { $"AppServer Error {numClients} [{ex?.Message}]" });
+                await Task.Delay(TimeSpan.FromDays(1)); // Hang and PowerShell script will Kill the process
+            }
         }
     }
 }
+

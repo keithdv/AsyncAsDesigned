@@ -13,26 +13,51 @@ namespace AsyncAsDesigned.PerfLib
     {
 
 
-        public static string AppServerListenPipe(int clientID, string uniqueID)
+        public static string ClientToAppServerPipeName(int clientID, string unique)
         {
-            return string.Format(_appServerListenPipe, uniqueID, clientID);
+            return string.Format(_clientToAppServerPipeName, clientID, unique);
         }
 
-        public static string DataServerListenPipe(int clientID, string uniqueID)
+        public static string AppServerToDataServerPipeName(int clientID, string unique)
         {
-            return string.Format(_dataServerListenPipe, uniqueID, clientID);
+            return string.Format(_appServerToDataServerPipeName, clientID, unique);
         }
 
-        private const string _appServerListenPipe = @"\\AsyncAsDesigned\AppServerListenPipeSync\{0}\{1}";
-        private const string _dataServerListenPipe = @"\\AsyncAsDesigned\DataServerListenPipeSync\{0}\{1}";
+        public static string DataServerToAppServerPipeName(int clientID, string unique)
+        {
+            return string.Format(_dataServerToAppServerPipeName, clientID, unique);
+        }
+
+        public static string AppServerToClientPipeName(int clientID, string unique)
+        {
+            return string.Format(_appServerToClientPipeName, clientID, unique);
+        }
+
+        private const string _clientToAppServerPipeName = @"\\AsyncAsDesigned\ClientToAppServerPipe\{0}\{1}";
+        private const string _appServerToDataServerPipeName = @"\\AsyncAsDesigned\AppServerToDataServerPipe\{0}\{1}";
+        private const string _dataServerToAppServerPipeName = @"\\AsyncAsDesigned\DataServerToAppServerPipe\{0}\{1}";
+        private const string _appServerToClientPipeName = @"\\AsyncAsDesigned\AppServerToClientPipeName\{0}\{1}";
 
         public static void Send(string pipeName, Token token)
         {
 
             using (NamedPipeClientStream pipeClient = new NamedPipeClientStream(".", pipeName, PipeDirection.Out, PipeOptions.None))
             {
+                Exception ex = new Exception();
 
-                pipeClient.Connect();
+                var tryAgain = true;
+                while (tryAgain)
+                {
+                    try
+                    {
+                        pipeClient.Connect();
+                        tryAgain = false;
+                    }
+                    catch (FileNotFoundException)
+                    {
+                        Task.Delay(25).Wait();
+                    }
+                }
 
                 SendToken(pipeClient, token);
 

@@ -14,13 +14,13 @@ namespace AsyncAsDesigned.PerfClient
         static object statusLock = new object();
         static string[] status;
 
-        public static async Task RunAsync(int numToSend, string appServerPipeName)
+        public static async Task RunAsync(int numToSend, string sendToAppServerPipeName, string listenToAppServerPipeName)
         {
 
             object receivedLock = new object();
             int received = 0;
 
-            Console.WriteLine($"Start Client {appServerPipeName}");
+            Console.WriteLine($"Client Start {sendToAppServerPipeName}");
 
             status = new string[numToSend];
 
@@ -28,54 +28,64 @@ namespace AsyncAsDesigned.PerfClient
 
             List<Task> sendTasks = new List<Task>();
 
-            async Task Listen(Token token)
+            using (var listen = new NamedPipeServerAsync(listenToAppServerPipeName))
             {
-
-                var listen = new NamedPipeServerAsync(token.AppServerToClient);
+                List<int> tokens = new List<int>();
+                TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
 
                 listen.TokenReceivedEventAsync += (t) =>
                 {
-                    UpdateStatus(token, "R");
+                    UpdateStatus(t, "R");
                     if (!t.End)
                     {
                         lock (receivedLock)
                         {
                             received++;
+                            tokens.Remove(t.ID);
+                            if (tokens.Count == 0)
+                            {
+                                taskCompletionSource.SetResult(null);
+                            }
                         }
                     }
+
                     return Task.CompletedTask;
                 };
 
-                await listen.StartAsync(true).ConfigureAwait(false);
+
+                var listenTask = listen.StartAsync();
+
+                for (var i = 0; i < numToSend; i++)
+                {
+
+                    var token = new Token(i);
+                    tokens.Add(token.ID);
+
+                    UpdateStatus(token, "S");
+
+                    sendTasks.Add(NamedPipeClientAsync.SendAsync(sendToAppServerPipeName, token));
+
+                }
+
+
+                await Task.WhenAll(sendTasks.ToArray());
+                await taskCompletionSource.Task;
+
+                Console.WriteLine($"Client Send End Token {sendToAppServerPipeName}");
+
+                var endToken = new Token(true);
+                await NamedPipeClientAsync.SendAsync(sendToAppServerPipeName, endToken).ConfigureAwait(false);
+                await listenTask; // Wait for the End Token to be received and exit the pipe infinit loop
+
 
             }
 
-
-            for (var i = 0; i < numToSend; i++)
-            {
-
-                var token = new Token(i);
-
-                await NamedPipeClientAsync.SendAsync(appServerPipeName, token).ConfigureAwait(false);
-
-                UpdateStatus(token, "S");
-
-                sendTasks.Add(Listen(token));
-
-            }
-
-            await Task.WhenAll(sendTasks.ToArray()).ConfigureAwait(false);
-
-            Console.WriteLine($"Send End Token");
 
             // Send Token.End = true token to shut down the AppServer (but not the DataServer in case there are multiple clients)
-            var endToken = new Token(true);
-            await NamedPipeClientAsync.SendAsync(appServerPipeName, endToken).ConfigureAwait(false);
-            await Listen(endToken);
 
             if (received != numToSend) { throw new Exception($"Failure: Number sent {numToSend} Number received {received}"); }
 
-            Console.WriteLine($"End Client {appServerPipeName}");
+            Console.WriteLine($"Client End {sendToAppServerPipeName}");
 
         }
 

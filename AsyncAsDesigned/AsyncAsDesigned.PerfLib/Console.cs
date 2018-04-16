@@ -35,7 +35,6 @@ namespace AsyncAsDesigned.PerfLib
 
         }
 
-
         public static void UpdateStatus(Token t, string s)
         {
 

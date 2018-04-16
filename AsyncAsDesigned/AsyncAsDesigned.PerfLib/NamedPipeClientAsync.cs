@@ -18,7 +18,19 @@ namespace AsyncAsDesigned.PerfLib
             using (NamedPipeClientStream pipeClient = new NamedPipeClientStream(".", pipeName, PipeDirection.Out, PipeOptions.Asynchronous))
             {
 
-                await pipeClient.ConnectAsync().ConfigureAwait(false);
+                var tryAgain = true;
+                while (tryAgain)
+                {
+                    try
+                    {
+                        await pipeClient.ConnectAsync().ConfigureAwait(false);
+                        tryAgain = false;
+                    }
+                    catch (FileNotFoundException)
+                    {
+                        await Task.Delay(25);
+                    }
+                }
 
                 await SendTokenAsync(pipeClient, token).ConfigureAwait(false);
 

@@ -1,5 +1,6 @@
 ﻿using AsyncAsDesigned.PerfLib;
 using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -19,10 +20,19 @@ namespace AsyncAsDesigned.PerfClient
             var clientNumber = int.Parse(args[1]);
             string uniquePipeName = args[2];
 
-            var pipeName = NamedPipeClientSync.AppServerListenPipe(clientNumber, uniquePipeName.ToString());
+            var sendPipeName = NamedPipeClientSync.ClientToAppServerPipeName(clientNumber, uniquePipeName);
+            var listenPipeName = NamedPipeClientSync.AppServerToClientPipeName(clientNumber, uniquePipeName);
 
-            await PerfClient.RunAsync(numToSend, pipeName);
-
+            try
+            {
+                await PerfClient.RunAsync(numToSend, sendPipeName, listenPipeName);
+            }
+            catch (Exception ex)
+            {
+                File.AppendAllLines($@"..\Results.txt", new string[] { $"Client Error {sendPipeName} [{ex?.Message}]" });
+                await Task.Delay(TimeSpan.FromDays(1)); // Hang and PowerShell script will Kill the process
+            }
         }
     }
 }
+

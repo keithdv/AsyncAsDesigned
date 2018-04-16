@@ -12,7 +12,6 @@ namespace AsyncAsDesigned.PerfLib
         public Token(int id)
         {
             this.ID = id;
-            this.AppServerID = id;
         }
 
         public Token(bool end)
@@ -21,13 +20,9 @@ namespace AsyncAsDesigned.PerfLib
         }
 
         public readonly int ID;
-        public readonly string AppServerToClient = Guid.NewGuid().ToString();
-        public readonly string DataServerToAppServer = Guid.NewGuid().ToString();
-        public readonly bool End;
+        public readonly bool End = false;
 
-        /// <summary>
-        /// Allow the AppServer to assign an ID that works with multiple clients
-        /// </summary>
+        // Incremental value for the AppServer to keep track of
         public int AppServerID { get; set; }
 
     }

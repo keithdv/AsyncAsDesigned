@@ -2,7 +2,7 @@
   "profiles": {
     "AsyncAsDesigned.PerfClient": {
       "commandName": "Project",
-      "commandLineArgs": "25 1 uniquekey"
+      "commandLineArgs": "25 1 uniquePipeName"
     }
   }
 }

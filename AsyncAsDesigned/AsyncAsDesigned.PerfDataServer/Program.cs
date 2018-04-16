@@ -1,5 +1,6 @@
 ﻿using AsyncAsDesigned.PerfLib;
 using System;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace AsyncAsDesigned.PerfDataServer
@@ -9,7 +10,7 @@ namespace AsyncAsDesigned.PerfDataServer
         static async Task Main(string[] args)
         {
 
-            if(args.Length != 2)
+            if (args.Length != 2)
             {
                 throw new Exception("Invalid number of command line args");
             }
@@ -17,10 +18,19 @@ namespace AsyncAsDesigned.PerfDataServer
             int clientID = int.Parse(args[0]);
             string uniquePipeName = args[1];
 
-            var pipeName = NamedPipeClientSync.DataServerListenPipe(clientID, uniquePipeName);
-            Console.WriteLine($"DataServer: {pipeName}");
+            var listenPipeName = NamedPipeClientSync.AppServerToDataServerPipeName(clientID, uniquePipeName);
+            var sendPipeName = NamedPipeClientSync.DataServerToAppServerPipeName(clientID, uniquePipeName);
 
-            await PerfDataServer.RunAsync(pipeName);
+            Console.WriteLine($"DataServer Start: {listenPipeName}");
+            try
+            {
+                await PerfDataServer.RunAsync(listenPipeName, sendPipeName);
+            }
+            catch (Exception ex)
+            {
+                File.AppendAllLines($@"..\Results.txt", new string[] { $"DataServer Error {sendPipeName} [{ex?.Message}]" });
+                await Task.Delay(TimeSpan.FromDays(1)); // Hang and PowerShell script will Kill the process
+            }
         }
     }
 }

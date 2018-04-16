@@ -13,12 +13,12 @@ namespace AsyncAsDesigned.PerfDataServer
         static object statusLock = new object();
         static List<string> status = new List<string>();
 
-        public static async Task RunAsync(string pipeName)
+        public static async Task RunAsync(string listenToAppServerPipeName, string sendToAppServerPipeName)
         {
 
             ConsoleOutput.ConsoleWriteLine("DataServer");
 
-            NamedPipeServerAsync listenToAppServer = new NamedPipeServerAsync(pipeName);
+            NamedPipeServerAsync listenToAppServer = new NamedPipeServerAsync(listenToAppServerPipeName);
 
             TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
 
@@ -35,7 +35,7 @@ namespace AsyncAsDesigned.PerfDataServer
                         await Task.Delay(500).ConfigureAwait(false);
                     }
                     UpdateStatus(t, "D");
-                    await NamedPipeClientAsync.SendAsync(t.DataServerToAppServer, t).ConfigureAwait(false);
+                    await NamedPipeClientAsync.SendAsync(sendToAppServerPipeName, t).ConfigureAwait(false);
                     UpdateStatus(t, "F");
                 };
 

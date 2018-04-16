@@ -11,17 +11,16 @@ namespace AsyncAsDesigned.PerfAppServer
 {
     public static class PerfAppServerSync
     {
-        public static int ID = 0;
+        public static int Count = 0;
 
-
-
-        public static void Run(string listenPipeName, string dataserverPipeName)
+        public static void Run(string clientListenPipeName, string clientSendPipeName, string dataserverListenPipeName, string dataserverSendPipeName)
         {
-            Console.WriteLine($"Start AppServer Sync {listenPipeName}");
+            Console.WriteLine($"AppServer Sync Start {clientListenPipeName}");
 
             object lockId = new object();
 
-            NamedPipeServerSync listenToClient = new NamedPipeServerSync(listenPipeName);
+            NamedPipeServerSync listenToClient = new NamedPipeServerSync(clientListenPipeName);
+            NamedPipeServerSync listenToDataServer = new NamedPipeServerSync(dataserverListenPipeName);
 
             listenToClient.TokenReceivedEvent += (t) =>
             {
@@ -31,8 +30,8 @@ namespace AsyncAsDesigned.PerfAppServer
 
                 lock (lockId)
                 {
-                    t.AppServerID = ID;
-                    ID++;
+                    Count++;
+                    t.AppServerID = Count;
                 }
 
                 ConsoleOutput.UpdateStatus(t, "R"); // R - Message Received
@@ -43,33 +42,32 @@ namespace AsyncAsDesigned.PerfAppServer
                 {
                     ConsoleOutput.UpdateStatus(t, "T"); // T - Thread Started
 
-                    NamedPipeServerSync listenToDataServer = new NamedPipeServerSync(t.DataServerToAppServer);
-
-                    // When the response is received from the dataserver
-                    // response to the client
-                    listenToDataServer.TokenReceivedEvent += (t2) =>
-                    {
-                        return Task.Run(() =>
-                        {
-                            ConsoleOutput.UpdateStatus(t, "C"); // C - Respond to client
-                            NamedPipeClientSync.Send(t2.AppServerToClient, t); // Blocks Thread until the message is sent to the client
-                        });
-                    };
-
-                    NamedPipeClientSync.Send(dataserverPipeName, t); // Blocks Thread until the message is sent to the data server
+                    NamedPipeClientSync.Send(dataserverSendPipeName, t); // Blocks Thread until the message is sent to the data server
                     ConsoleOutput.UpdateStatus(t, "D"); // D - Waiting for DataServer (DataServer purposefully delays)
-
-                    listenToDataServer.Start(true);
-
-                    ConsoleOutput.UpdateStatus(t, "F"); // F - Finished
 
                 });
 
             };
 
-            listenToClient.Start();
+            listenToDataServer.TokenReceivedEvent += (t) =>
+            {
+                return Task.Run(() =>
+                {
+                    ConsoleOutput.UpdateStatus(t, "C"); // C - Respond to client
+                    NamedPipeClientSync.Send(clientSendPipeName, t); // Blocks Thread until the message is sent to the client
+                    ConsoleOutput.UpdateStatus(t, "F"); // F - Finished
+                });
+            };
 
-            Console.WriteLine($"End AppServer {listenPipeName}");
+
+            Task[] listenTasks = new Task[2];
+
+            listenTasks[0] = Task.Run(() => listenToDataServer.Start());
+            listenTasks[1] = Task.Run(() => listenToClient.Start());
+
+            Task.WaitAll(listenTasks);
+
+            Console.WriteLine($"AppServer Sync End {clientListenPipeName}");
 
         }
 
