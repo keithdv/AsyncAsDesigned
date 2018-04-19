@@ -118,7 +118,7 @@ namespace SyncContext.Lib
          *  Exercise 14 - Task.WhenAll
          *     Run multiple Tasks in Parallel
          *     
-         * Excercise 15 - Task.WhenAll under control
+         * Exercise 15 - Task.WhenAll under control
          *      Likely it's a bad idea to create too many tasks - both for client and server
          *      Easy to use Task.WhenAll but chunk out the Task Batches
          *      Yes, this method takes 1 second instead of 100 ms
@@ -138,6 +138,12 @@ namespace SyncContext.Lib
          *      
          *      Solution: Change the approach. Asynchronous code should be written functionally.
          *       That's a broad field but worth researching.
+         *       
+         * Exercise 17 - ExecutionContext.Run
+         *      Uncomment the code, run Exercise 1, and note the Output Window
+         *      See how AsyncLocal has the same values as AsyncAwait_C
+         *      This is because AsyncLocal is within a container within ExecutionContext
+         *      Execution.Run is part of back-end mechanics of asynchronous forks (await, Task.Run)
          * */
 
 
@@ -174,6 +180,10 @@ namespace SyncContext.Lib
             // Point: Why do asyncLocalB and asyncLocalC not have a value?? AsyncLocalA does.
             Debug.WriteLine($"Logical Execution 11: ThreadID {System.Threading.Thread.CurrentThread.ManagedThreadId} ThreadLocal {threadLocalA.Value}{threadLocalB.Value}{threadLocalC.Value} AsyncLocal: {asyncLocalA.Value}{asyncLocalB.Value}{asyncLocalC.Value} ");
 
+            // Exercise 17
+            // Note the values of AsyncLocal in the output window
+            // This is because AsyncLocal is within a container within ExecutionContext
+            // Execution.Run is part of back - end mechanics of asynchronous forks(await, Task.Run)
             //ExecutionContext.Run(executionContextC_Capture, (o) =>
             //{
             //    Debug.WriteLine($"executionContextC_Capture Continuation: ThreadID {System.Threading.Thread.CurrentThread.ManagedThreadId} ThreadLocal {threadLocalA.Value}{threadLocalB.Value}{threadLocalC.Value} AsyncLocal: {asyncLocalA.Value}{asyncLocalB.Value}{asyncLocalC.Value} ");

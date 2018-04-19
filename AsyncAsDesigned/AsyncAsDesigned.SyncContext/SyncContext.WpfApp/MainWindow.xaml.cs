@@ -325,7 +325,7 @@ namespace WpfApp1
         public async void AsyncAwaitExercise15_Click(object sender, RoutedEventArgs e)
         {
             /*
-             * Excercise 15 - Task.WhenAll under control
+             * Exercise 15 - Task.WhenAll under control
              * Likely it's a bad idea to create too many tasks - both for client and server
              * Easy to use Task.WhenAll but chunk out the Task Batches
              * Yes, this method takes 1 second instead of 100 ms
