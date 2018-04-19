@@ -18,7 +18,7 @@ namespace AsyncAsDesigned.PerfAppServer
             // Dramatically improves the performance of Sync
             // This shows that Task.Run MAY use a new thread\
             // But .NET is well aware of the cost of threads
-            // ThreadPool.SetMinThreads(40, 40);
+            //ThreadPool.SetMinThreads(20, 20);
 
             if (args.Length != 3)
             {
@@ -67,10 +67,13 @@ namespace AsyncAsDesigned.PerfAppServer
                 // CLose the DataServer
                 //            await NamedPipeClientAsync.SendAsync(NamedPipeClientSync.DataServerListenPipe(uniquePipeName), new Token(true)).ConfigureAwait(false);
 
-                Console.WriteLine($"Clients: {numClients} Count: {(isAsync ? PerfAppServerAsync.ID : PerfAppServerSync.Count)} Elapsed Time: {(Stop.Value - Start.Value).TotalMilliseconds}");
+                Console.BackgroundColor = ConsoleColor.White;
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine($"AppServer {args[0]} Completed: Clients: {numClients} Count: {(isAsync ? PerfAppServerAsync.ID : PerfAppServerSync.Count)} Elapsed Time: {(Stop.Value - Start.Value).TotalMilliseconds}");
+                Console.ResetColor();
 
 #if !DEBUG
-            File.AppendAllLines($@"..\Results.txt", new string[] { $"{(isAsync ? "Async" : "Sync")} {numClients} {(isAsync ? PerfAppServerAsync.ID : PerfAppServerSync.Count)} {(Stop.Value - Start.Value).TotalMilliseconds}" });
+                File.AppendAllLines($@"..\Results.txt", new string[] { $"{(isAsync ? "Async" : "Sync")} {numClients} {(isAsync ? PerfAppServerAsync.ID : PerfAppServerSync.Count)} {(Stop.Value - Start.Value).TotalMilliseconds}" });
 #endif
 
 #if DEBUG

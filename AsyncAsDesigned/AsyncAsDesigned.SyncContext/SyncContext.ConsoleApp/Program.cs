@@ -1,20 +1,43 @@
 ﻿using SyncContext.Lib;
 using System;
+using System.Threading.Tasks;
 
 namespace SyncContext.ConsoleApp
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
-            Console.WriteLine("Start");
 
-            var result = NoConfigureAwait.Increment(0).Result;
+            Console.WriteLine("Which Exercise to run? (1 - )");
+            int result;
+            while (!int.TryParse(Console.ReadKey().KeyChar.ToString(), out result)) { Console.WriteLine("Invalid Entry"); }
 
-            TaskException.Method();
-
-            Console.WriteLine($"Complete {result}");
-            Console.ReadKey();
+            switch (result)
+            {
+                case 1:
+                    // Exercise 1 - Baseline
+                    await ExploreAsyncAwait.AsyncAwait_A();
+                    break;
+                case 2:
+                    // Exercise 2 - Task Debugger Window
+                    await ExploreAsyncAwait.AsyncAwait_A(pause: 10000);
+                    break;
+                case 3:
+                    // Exercise 3 - Don't await
+                    // Note the warning - Don't ignore these
+                    ExploreAsyncAwait.AsyncAwait_A();
+                    break;
+                case 6:
+                    // Exercise 4 - .Wait()
+                    // Works
+                    ExploreAsyncAwait.AsyncAwait_A(pause:5000).Wait();
+                    break;
+                default:
+                    Console.WriteLine("Incorrect");
+                    Console.ReadKey();
+                    break;
+            }
 
         }
     }

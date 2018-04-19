@@ -24,57 +24,48 @@ Push-Location $dir
 Stop-Process -Name "dotnet" -ErrorAction SilentlyContinue
 
 
-  
+$build = "Debug";
+$numClients = 1;
+
 (startProcess -dir "AsyncAsDesigned.PerfDataServer" -cmdArgs "build", "--configuration Release").WaitForExit();
 (startProcess -dir "AsyncAsDesigned.PerfClient" -cmdArgs "build", "--configuration Release").WaitForExit();
-(startProcess -dir "AsyncAsDesigned.PerfAppServer" -cmdArgs "build", "--configuration Debug").WaitForExit();
+(startProcess -dir "AsyncAsDesigned.PerfAppServer" -cmdArgs "build", "--configuration $build").WaitForExit();
 
+$syncGuid = New-Guid;
+$asyncGuid = New-Guid;
 
+$processes = @();
+    
+For($i=1; $i -le $numClients; $i++)
+{
+    $processes += startProcess -dir .\AsyncAsDesigned.PerfClient -cmdArgs "run", "--configuration Release", "--no-build", "10", "$i", "$syncGuid"
+    Start-Sleep -Milliseconds 25
+    #$processes += startProcess -dir .\AsyncAsDesigned.PerfDataServer -cmdArgs "run", "--configuration Release", "--no-build", "$i", "$syncGuid"
+    Start-Sleep -Milliseconds 25
+}
+
+# Wait for everything to startup (Probably unneccessary)
+Start-Sleep 1
+
+$appProcessSync = startProcess -dir .\AsyncAsDesigned.PerfAppServer -cmdArgs "run", "--configuration $build", "--no-build", "sync", "$numClients", "$syncGuid"
+
+foreach($b in $processes){ $b.WaitForExit(); }
 
 $processes = @();
 
+For($i=1; $i -le $numClients; $i++)
+{
+    $processes += startProcess -dir .\AsyncAsDesigned.PerfClient -cmdArgs "run", "--configuration Release", "--no-build", "10", "$i", "$asyncGuid"
+    Start-Sleep -Milliseconds 25
+    #$processes += startProcess -dir .\AsyncAsDesigned.PerfDataServer -cmdArgs "run", "--configuration Release", "--no-build", "$i", "$asyncGuid"
+    Start-Sleep -Milliseconds 25
+}
 
-    $syncGuid = New-Guid;
-    $asyncGuid = New-Guid;
+$appProcessAsync = startProcess -dir .\AsyncAsDesigned.PerfAppServer -cmdArgs "run", "--configuration $build", "--no-build", "async", "$numClients", "$asyncGuid"
 
-    for($num = 3; $num -le 3; $num = $num + 1){
-
-        $processes = @();
-    
-        For($i=1; $i -le $num; $i++)
-        {
-            $processes += startProcess -dir .\AsyncAsDesigned.PerfClient -cmdArgs "run", "--configuration Release", "--no-build", "10", "$i", "$syncGuid"
-            Start-Sleep -Milliseconds 25
-            $processes += startProcess -dir .\AsyncAsDesigned.PerfDataServer -cmdArgs "run", "--configuration Release", "--no-build", "$i", "$syncGuid"
-            Start-Sleep -Milliseconds 25
-        }
-
-        # Wait for everything to startup (Probably unneccessary)
-        Start-Sleep 1
-
-        $appProcessSync = startProcess -dir .\AsyncAsDesigned.PerfAppServer -cmdArgs "run", "--configuration Debug", "--no-build", "sync", "$num", "$syncGuid"
-
-        foreach($b in $processes){ $b.WaitForExit(); }
-
-        Write-Output "$num sync is done"
-
-        $processes = @();
-
-        For($i=1; $i -le $num; $i++)
-        {
-            $processes += startProcess -dir .\AsyncAsDesigned.PerfClient -cmdArgs "run", "--configuration Release", "--no-build", "10", "$i", "$asyncGuid"
-            Start-Sleep -Milliseconds 25
-            $processes += startProcess -dir .\AsyncAsDesigned.PerfDataServer -cmdArgs "run", "--configuration Release", "--no-build", "$i", "$asyncGuid"
-            Start-Sleep -Milliseconds 25
-        }
-
-        $appProcessAsync = startProcess -dir .\AsyncAsDesigned.PerfAppServer -cmdArgs "run", "--configuration Debug", "--no-build", "async", "$num", "$asyncGuid"
-
-        foreach($b in $processes){ $b.WaitForExit(); }
-
+foreach($b in $processes){ $b.WaitForExit(); }
         
 
-    }
 
 
 

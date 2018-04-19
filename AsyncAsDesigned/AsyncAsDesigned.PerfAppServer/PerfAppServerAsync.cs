@@ -27,6 +27,8 @@ namespace AsyncAsDesigned.PerfAppServer
 
                     listenToClient.TokenReceivedEventAsync += async (t) =>
                     {
+                        var token = t;
+
                         // Start the time when the first value comes in from the first client
                         if (!Program.Start.HasValue) { Program.Start = ConsoleOutput.StartTime = DateTime.Now; }
 
@@ -36,11 +38,13 @@ namespace AsyncAsDesigned.PerfAppServer
                             ID++;
                         }
 
-                        ConsoleOutput.UpdateStatus("AppServer Async: ", t, "R");
+                        ConsoleOutput.UpdateStatus("AppServer Async: ", token, "R");
 
-                        await NamedPipeClientAsync.SendAsync(dataserverSendPipeName, t).ConfigureAwait(false);
+                        // Key: Using Async allows the thread to go off and do other work
+                        // until the DataServer responds
+                        await NamedPipeClientAsync.SendAsync(dataserverSendPipeName, token).ConfigureAwait(false);
 
-                        ConsoleOutput.UpdateStatus("AppServer Async: ", t, "D");
+                        ConsoleOutput.UpdateStatus("AppServer Async: ", token, "D");
 
                     };
 

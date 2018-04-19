@@ -35,6 +35,7 @@ namespace AsyncAsDesigned.PerfAppServer
 
                 ConsoleOutput.UpdateStatus("AppServer Sync: ", t, "R"); // R - Message Received
 
+                // Key: The thread is locked until the DataServer responds
                 NamedPipeClientSync.Send(dataserverSendPipeName, t); // Blocks Thread until the message is sent to the data server
 
                 ConsoleOutput.UpdateStatus("AppServer Sync: ", t, "D"); // D - Waiting for DataServer (DataServer purposefully delays)

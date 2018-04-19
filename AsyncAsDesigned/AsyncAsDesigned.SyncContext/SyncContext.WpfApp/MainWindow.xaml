@@ -5,14 +5,15 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfApp1"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="1200">
+        Title="MainWindow" Height="618.667" Width="800.667">
     <Window.Resources>
         <Style TargetType="Button">
-            <Setter Property="Margin" Value="3"></Setter>
+            <Setter Property="Margin" Value="5"></Setter>
             <Setter Property="FontSize" Value="18"></Setter>
+            <Setter Property="Padding" Value="4"></Setter>
         </Style>
         <Style TargetType="TextBlock">
-            <Setter Property="Margin" Value="3"></Setter>
+            <Setter Property="Margin" Value="5"></Setter>
             <Setter Property="FontSize" Value="18"></Setter>
         </Style>
     </Window.Resources>
@@ -21,45 +22,41 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"></ColumnDefinition>
             <ColumnDefinition Width="Auto"></ColumnDefinition>
-            <ColumnDefinition Width="Auto"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
         </Grid.RowDefinitions>
-        <StackPanel Grid.Column="0">
-            <TextBlock>No ConfigureAwait</TextBlock>
-            <Button x:Name="NoConfigureAwaitResult" Click="NoConfigureAwaitResult_Click" >Method().Result</Button>
-            <Button x:Name="NoConfigureAwaitAsync" Click="NoConfigureAwaitAsync_Click" >await Method()</Button>
-            <Button x:Name="NoConfigureAwaitWait" Click="NoConfigureAwaitWait_Click" >Fix? Wait() -> Result</Button>
-            <Button x:Name="NoConfigureAwaitTaskRun" Click="NoConfigureAwaitTaskRun_Click" >Fix? Task.Run</Button>
-            <Button x:Name="NoConfigureAwaitTaskRun2" Click="NoConfigureAwaitTaskRun2_Click" >Fix? Task.Run 2</Button>
 
-        </StackPanel>
+        <TextBlock Grid.Row="0" Grid.ColumnSpan="2">Explore Async / Await</TextBlock>
 
-        <StackPanel Grid.Column="1">
-            <TextBlock>ConfigureAwaitFalse</TextBlock>
-            <Button x:Name="ConfigureAwaitFalseResult" Click="ConfigureAwaitFalseResult_Click" >Method().Result</Button>
-            <Button x:Name="ConfigureAwaitFalseAsync" Click="ConfigureAwaitFalseAsync_Click" >await Method()</Button>
-            
-            <TextBlock>Task Exception</TextBlock>
-            <Button x:Name="TaskExceptionMethod" Click="TaskExceptionMethod_Click">Async Void</Button>
-            <Button x:Name="TaskExceptionMethodAsync" Click="TaskExceptionMethodAsync_Click">Async Task</Button>
-
+        <StackPanel Grid.Row="1" Grid.Column="0">
+            <Button x:Name="AsyncAwaitExercise1" Click="AsyncAwaitExercise1_Click">Exercise 1 - Baseline</Button>
+            <Button x:Name="AsyncAwaitExercise2" Click="AsyncAwaitExercise2_Click">Exercise 2 - Task Debug Window</Button>
+            <Button x:Name="AsyncAwaitExercise3" Click="AsyncAwaitExercise3_Click">Exercise 3 - Don't Await</Button>
+            <Button x:Name="AsyncAwaitExercise4" Click="AsyncAwaitExercise4_Click">Exercise 4 - Don't Await - Throw Exception</Button>
+            <Button x:Name="AsyncAwaitExercise5" Click="AsyncAwaitExercise5_Click">Exercise 5 - Throw Exception - await, .Wait(), .Result</Button>
+            <Button x:Name="AsyncAwaitExercise6" Click="AsyncAwaitExercise6_Click">Exercise 6 - .Wait() with default ConfigureAwait(true)</Button>
+            <Button x:Name="AsyncAwaitExercise7" Click="AsyncAwaitExercise7_Click">Exercise 7 - .Wait() with ConfigureAwait(false)</Button>
+            <Button x:Name="AsyncAwaitExercise8" Click="AsyncAwaitExercise8_Click">Exercise 8 - Null SynchronizationContext Error</Button>
+            <Button x:Name="AsyncAwaitExercise9" Click="AsyncAwaitExercise9_Click">Exercise 9 - .Wait() fix -> ContinueWith</Button>
+            <Button x:Name="AsyncAwaitExercise10" Click="AsyncAwaitExercise10_Click">Exercise 10 - .Wait() fix -> Task.Run</Button>
         </StackPanel>
 
 
-        <StackPanel Grid.Column="2">
-            <TextBlock>Task Examples</TextBlock>
-            <Button x:Name="TaskQueue" Click="TaskQueue_Click" >Task Queue</Button>
-            <TextBlock>Null SychContext</TextBlock>
-            <TextBlock>Behavior</TextBlock>
+        <StackPanel Grid.Row="1" Grid.Column="1">
+            <Button x:Name="AsyncAwaitExercise11" Click="AsyncAwaitExercise11_Click">Exercise 11 - Queue Tasks Logic</Button>
+            <Button x:Name="AsyncAwaitExercise12" Click="AsyncAwaitExercise12_Click">Exercise 12 - TaskQueue Method</Button>
+            <Button x:Name="AsyncAwaitExercise13" Click="AsyncAwaitExercise13_Click">Exercise 13 - InitializeAsync Class</Button>
+            <Button x:Name="AsyncAwaitExercise14" Click="AsyncAwaitExercise14_Click">Exercise 14 - Task.WhenAll</Button>
+            <Button x:Name="AsyncAwaitExercise15" Click="AsyncAwaitExercise15_Click">Exercise 15 - Task.WhenAll under control</Button>
+            <TextBlock>Exercise 16 Null SychContext Behavior</TextBlock>
             <Button x:Name="NotNullSyncContext" Click="NotNullSyncContext_Click" >Dispatcher SyncContext</Button>
             <Button x:Name="NullSyncContext" Click="NullSyncContext_Click" >Null SyncContext</Button>
-
         </StackPanel>
-        
-        <StackPanel Grid.Row="1" Grid.ColumnSpan="3" HorizontalAlignment="Stretch">
+
+        <StackPanel Grid.Row="2" Grid.ColumnSpan="3" HorizontalAlignment="Stretch">
             <TextBlock>
                 <Run>Count: </Run>
                 <Run Text="{Binding Path=Count}"></Run>
