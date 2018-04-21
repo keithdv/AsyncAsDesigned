@@ -2,7 +2,7 @@
   "profiles": {
     "AsyncAsDesigned.PerfAppServer": {
       "commandName": "Project",
-      "commandLineArgs": "sync 1 uniquePipeName"
+      "commandLineArgs": "async 1 uniquePipeName"
     }
   }
 }

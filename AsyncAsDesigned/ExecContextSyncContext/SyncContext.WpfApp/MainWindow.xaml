@@ -54,6 +54,7 @@
             <TextBlock>Exercise 16 Null SychContext Behavior</TextBlock>
             <Button x:Name="NotNullSyncContext" Click="NotNullSyncContext_Click" >Dispatcher SyncContext</Button>
             <Button x:Name="NullSyncContext" Click="NullSyncContext_Click" >Null SyncContext</Button>
+            <Button x:Name="AsyncAwaitExercise17" Click="AsyncAwaitExercise17_Click">Exercise 15 - ExeuctionContextC.Run</Button>
         </StackPanel>
 
         <StackPanel Grid.Row="2" Grid.ColumnSpan="3" HorizontalAlignment="Stretch">

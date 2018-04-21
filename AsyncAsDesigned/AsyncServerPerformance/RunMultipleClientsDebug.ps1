@@ -17,12 +17,15 @@ $dir = Split-Path $path
 Push-Location $dir
 [Environment]::CurrentDirectory = $PWD
 
-For($i=1; $i -le $num; $i++)
+$guid = New-Guid;
+
+For($i=1; $i -le 5; $i++)
 {
-    $processes += startProcess -dir .\AsyncAsDesigned.PerfClient -cmdArgs "run", "--configuration Debug", "--no-build", "10", "$i", "uniquePipeName"
+    $processes += startProcess -dir .\AsyncAsDesigned.PerfClient -cmdArgs "run", "--configuration Release", "--no-build", "5", "$i", "$guid"
     Start-Sleep -Milliseconds 25
-    $processes += startProcess -dir .\AsyncAsDesigned.PerfDataServer -cmdArgs "run", "--configuration Debug", "--no-build", "$i", "uniquePipeName"
+    $processes += startProcess -dir .\AsyncAsDesigned.PerfDataServer -cmdArgs "run", "--configuration Release", "--no-build", "$i", "$guid"
     Start-Sleep -Milliseconds 25
 }
 
 
+$appProcess = startProcess -dir .\AsyncAsDesigned.PerfAppServer -cmdArgs "run", "--configuration Release", "--no-build", "sync", "$num", "$syncGuid"

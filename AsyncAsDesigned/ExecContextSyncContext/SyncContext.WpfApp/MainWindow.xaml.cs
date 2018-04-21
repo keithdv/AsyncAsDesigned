@@ -186,6 +186,7 @@ namespace WpfApp1
         public void AsyncAwaitExercise10_Click(object sender, RoutedEventArgs e)
         {
 
+
             // Exercise 10 - .Wait() fix -> Task.Run
             // In a nested method adding async void isn't the right
 
@@ -197,21 +198,35 @@ namespace WpfApp1
         // And you can't change it's signature or some other concern
         private void NestedBusinessLogicMethod() // Note: async void is not a solution!! Exceptions are lost
         {
-            // What is this accomplishing??
-            // Instead of allowing the Task Continuation to occur on a different thread (.ConfigureAwait(false))
-            // We are executing the Task and it's continuation on a different thread than the main thread
-            // and that thread is never blocked, only the main thread, so we don't have a deadlock
-            // Note this in the Output Window - All points are not ThreadID 1 but are the same thread
-            // Also note that when the newly created task is executed the Main Thread is already blocked
-            // To be clear this is wrapping an asyncronous operation with multithreading - this is adding back in thread contention issues
-
-            // Sidepoint - async lambda, this is equivalent to async task method - perfectly valid and safe
-            Task.Run(async () =>
+            // Sidepoint - async lambda - signature is async task - perfectly valid and safe
+            Func<Task> asyncLamda = async () =>
             {
                 await Task.Delay(3000); // Main thread is already blocked
                 await SyncContext.Lib.ExploreAsyncAwait.AsyncAwait_A(pause: 3000);
-                Count = Count + 1;
-            }).Wait();
+
+                // This causes an error because we are not running on the UI thread
+                // SynchronizationContext.Current = null
+                // Main Thread is blocked
+                // Count = Count + 1;
+            };
+
+            // What is this accomplishing??
+            // We are executing the Task and it's continuation on a different thread than the main thread
+            // and that thread is never blocked, only the main thread, so we don't have a deadlock
+
+            // Also the DispatcherSynchronizationContext within SynchronizationContext.Current is not 
+            // set within the Task.Run so SynchronizationContext.Current is NULL
+
+            // Note this in the Output Window - All points are not ThreadID 1 but are the same thread
+
+            // Also note that when the newly created task is executed the Main Thread is already blocked
+            // To be clear this is wrapping an asyncronous operation with multithreading - this is adding back in thread contention issues
+
+            Task.Run(asyncLamda).Wait();
+
+            // Sidepoint: This DOES pass the DispatcherSynchronizationContext to the Task - And blocks for the same reasons
+            //Task.Factory.StartNew(asyncLamda, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.FromCurrentSynchronizationContext()).Unwrap().Wait();
+
         }
 
         private Task lastTask = Task.CompletedTask;
@@ -334,7 +349,7 @@ namespace WpfApp1
 
             List<Task> tasks = new List<Task>();
 
-            for(var i = 0; i < 101; i++)
+            for (var i = 0; i < 101; i++)
             {
                 tasks.Add(Task.Delay(100));
 
@@ -411,5 +426,56 @@ namespace WpfApp1
 
         }
 
+        public async void AsyncAwaitExercise17_Click(object sender, RoutedEventArgs e)
+        {
+
+            // Exercise 17
+            // Note the values of AsyncLocal in the output window
+            // This is because AsyncLocal is within a container within ExecutionContext
+            // Execution.Run is part of back - end mechanics of asynchronous forks(await, Task.Run)
+
+            // Not any real world value - Just bringing together the concepts
+            // And driving home the fact that these are instances of object like any other
+            // This is the type of work Async / Await keywords are instructing the compiler to do
+
+            var sc = SynchronizationContext.Current;
+
+            await Task.Run(async () =>
+            {
+                // We are NOT on the UI thread. SynchronizationContext.Current is null
+                Debug.WriteLine($"ThreadID: {Thread.CurrentThread.ManagedThreadId} SynchoronizationContext == null: {(SynchronizationContext.Current == null)}");
+                await ExploreAsyncAwait.AsyncAwait_A();
+
+                TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
+
+                // Yet, using SynchronizationContext of the UI Thread and ExecutionContext we can run
+                // in the same context as AsyncAwait_C
+
+                sc.Post((o) =>
+                {
+                    // Spot A
+
+                    // We are now on the UI thread
+                    ExecutionContext.Run(ExploreAsyncAwait.executionContextC_Capture, (eo) =>
+                    {
+                        // AsyncLocal now has the same values as AsyncAwait_C
+                        ExploreAsyncAwait.LogicalExecution(11);
+                        // And safely interact with UI controls
+                        Count = Count + 1;
+                    }, null);
+
+                    taskCompletionSource.SetResult(null);
+
+                }, null);
+
+                // Without this we to Spot B before we get to Spot A
+                await taskCompletionSource.Task;
+
+                // Spot B
+            });
+
+
+
+        }
     }
 }

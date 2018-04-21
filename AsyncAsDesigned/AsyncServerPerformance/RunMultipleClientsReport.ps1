@@ -1,3 +1,7 @@
+# Gather data for Report
+# Run repeatedly with a different number of clients each time and record the times
+
+
 
 function startProcess ($dir, $cmdArgs) {
  $ProcessInfo = New-Object System.Diagnostics.ProcessStartInfo

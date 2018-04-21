@@ -14,13 +14,8 @@ namespace AsyncAsDesigned.PerfAppServer
         static async Task Main(string[] args)
         {
 
-            // NEVER USE THIS IN PRODUCTION!!!
-            // Dramatically improves the performance of Sync
-            // This shows that Task.Run MAY use a new thread\
-            // But .NET is well aware of the cost of threads
-            //ThreadPool.SetMinThreads(20, 20);
 
-            if (args.Length != 3)
+            if (!(3, 4).Contains(args.Length))
             {
                 throw new Exception("Invalid number of command line arguments");
             }
@@ -28,6 +23,15 @@ namespace AsyncAsDesigned.PerfAppServer
             bool isAsync = args[0] == "async";
             int numClients = int.Parse(args[1]);
             string uniquePipeName = args[2];
+
+            if(args.Length == 4 && int.TryParse(args[3], out var upThreads))
+            {
+                // NEVER USE THIS IN PRODUCTION!!!
+                // Dramatically improves the performance of Sync
+                // This shows that Task.Run MAY use a new thread\
+                // But .NET is well aware of the cost of threads
+                ThreadPool.SetMinThreads(upThreads, upThreads);
+            }
 
             try
             {
