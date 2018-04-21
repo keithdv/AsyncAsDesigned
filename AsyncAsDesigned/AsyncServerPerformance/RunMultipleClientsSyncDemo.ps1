@@ -30,9 +30,9 @@ $numClients = 5;
 
 For($i=1; $i -le $numClients; $i++)
 {
-    $processes += startProcess -dir .\AsyncAsDesigned.PerfClient -cmdArgs "run", "--configuration Release", "--no-build", "5", "$i", "$guid"
+    startProcess -dir .\AsyncAsDesigned.PerfClient -cmdArgs "run", "--configuration Release", "--no-build", "5", "$i", "$guid"
     Start-Sleep -Milliseconds 25
-    $processes += startProcess -dir .\AsyncAsDesigned.PerfDataServer -cmdArgs "run", "--configuration Release", "--no-build", "$i", "$guid"
+    startProcess -dir .\AsyncAsDesigned.PerfDataServer -cmdArgs "run", "--configuration Release", "--no-build", "$i", "$guid"
     Start-Sleep -Milliseconds 25
 }
 
