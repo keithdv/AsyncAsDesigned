@@ -26,7 +26,7 @@ namespace SyncContext.ConsoleApp
                 case 3:
                     // Exercise 3 - Don't await
                     // Note the warning - Don't ignore these
-                    ExploreAsyncAwait.AsyncAwait_A(Output);
+                    ExploreAsyncAwait.AsyncAwait_A(output: Output, pause: 10000);
                     break;
                 case 4:
                     // Exercise 4 - Don't await, exception lost
@@ -45,7 +45,8 @@ namespace SyncContext.ConsoleApp
                     break;
             }
 
-
+            Console.WriteLine("Done");
+            Console.ReadKey();
         }
 
         private static void Output(string message)
