@@ -37,4 +37,4 @@ For($i=1; $i -le $numClients; $i++)
 }
 
 
-$appProcess = startProcess -dir .\AsyncAsDesigned.PerfAppServer -cmdArgs "run", "--configuration Debug", "--no-build", "sync", "$numClients", "$guid", "10" # Run with 10 threads
+$appProcess = startProcess -dir .\AsyncAsDesigned.PerfAppServer -cmdArgs "run", "--configuration Debug", "--no-build", "sync", "$numClients", "$guid"#, "10" # Run with 10 threads

@@ -31,6 +31,7 @@ namespace AsyncAsDesigned.PerfAppServer
                 // This shows that Task.Run MAY use a new thread\
                 // But .NET is well aware of the cost of threads
                 ThreadPool.SetMinThreads(upThreads, upThreads);
+                Console.WriteLine($"Threads: {upThreads}");
             }
 
             try

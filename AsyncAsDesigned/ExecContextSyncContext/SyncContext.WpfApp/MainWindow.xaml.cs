@@ -42,10 +42,6 @@ namespace WpfApp1
         public static readonly DependencyProperty CountProperty =
             DependencyProperty.Register("Count", typeof(int), typeof(MainWindow), new PropertyMetadata(0));
 
-
-
-
-
         public ObservableCollection<string> Messages
         {
             get { return (ObservableCollection<string>)GetValue(MessagesProperty); }
@@ -55,8 +51,6 @@ namespace WpfApp1
         // Using a DependencyProperty as the backing store for vs.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty MessagesProperty =
             DependencyProperty.Register("Messages", typeof(ObservableCollection<string>), typeof(MainWindow), new PropertyMetadata(null));
-
-
 
 
         private int progress = 0;
@@ -178,15 +172,18 @@ namespace WpfApp1
             // Deadlock resolved the correct way.
             // UI Thread Blocked 
             // Note output window - Different thread completes the task (Logical Execution 7+) that the main thread is waiting for to complete alleviating the deadlock
-            SyncContext.Lib.ExploreAsyncAwait.AsyncAwait_A(output: (s) => messages.Add(s), continueOnCapturedSynchronizationContext: false, pause: 5000).Wait();
+            SyncContext.Lib.ExploreAsyncAwait.AsyncAwait_A(output: (s) => messages.Add(s), continueOnCapturedSynchronizationContext: false, pause: 3000).Wait();
 
             messages.ForEach(s => Messages.Add(s));
             Count = Count + 1;
+
+            Output("Exercise 7 Done");
         }
 
         public async void AsyncAwaitExercise8_Click(object sender, RoutedEventArgs e)
         {
             Output("Exercise 8");
+
 
             // Exercise 8 - SynchronizationContext.Current = Null
             // Though it can cause DeadLocks this shows that DispaterSynchronizationContext is important
@@ -200,7 +197,8 @@ namespace WpfApp1
             // Note output window - Different thread completes the task (Logical Execution 7+) that the main thread is waiting for to complete alleviating the deadlock
             await SyncContext.Lib.ExploreAsyncAwait.AsyncAwait_A(output: (s) => messages.Add(s), continueOnCapturedSynchronizationContext: false, pause: 5000);
 
-            messages.ForEach(s => Messages.Add(s));
+            messages.ForEach(s => Debug.WriteLine(s));
+
             Count = Count + 1;
 
         }
@@ -297,6 +295,7 @@ namespace WpfApp1
             // Allow the next task to Execute
             taskCompletionSource.SetResult(null);
 
+            Output("Exercise 11 Done");
         }
 
         public async void AsyncAwaitExercise12_Click(object sender, RoutedEventArgs e)
@@ -310,6 +309,8 @@ namespace WpfApp1
                 await Task.Delay(1000, c);
                 Count = Count + 1;
             });
+
+            Output("Exercise 12 Done");
         }
 
         private async Task TaskQueue(Func<CancellationToken, Task> func)
@@ -377,20 +378,22 @@ namespace WpfApp1
 
         public async void AsyncAwaitExercise14_Click(object sender, RoutedEventArgs e)
         {
-            
+            Output("Exercise 14");
             Task[] someTasks = new Task[3];
 
-            someTasks[0] = Task.Delay(200);
+            someTasks[0] = Task.Delay(2000);
             someTasks[1] = Task.Delay(2000);
             someTasks[2] = Task.Delay(2000);
 
             // Takes 2 seconds not 6
             await Task.WhenAll(someTasks);
-
+            Output("Exercise 14 Done");
         }
 
         public async void AsyncAwaitExercise15_Click(object sender, RoutedEventArgs e)
         {
+            Output("Exercise 15 Start");
+
             /*
              * Exercise 15 - Task.WhenAll under control
              * Likely it's a bad idea to create too many tasks - both for client and server
@@ -400,7 +403,7 @@ namespace WpfApp1
              */
 
             List<Task> tasks = new List<Task>();
-
+            
             for (var i = 0; i < 101; i++)
             {
                 tasks.Add(Task.Delay(100));
@@ -416,6 +419,7 @@ namespace WpfApp1
             // Important but easy to forget
             await Task.WhenAll(tasks);
 
+            Output("Exercise 15 End");
         }
         /*
          * 
@@ -532,6 +536,7 @@ namespace WpfApp1
 
         private void Output(string message)
         {
+            Debug.WriteLine(message);
             Messages.Add(message);
         }
 
