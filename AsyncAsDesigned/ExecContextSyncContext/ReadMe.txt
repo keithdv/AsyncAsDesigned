@@ -5,15 +5,16 @@ See corresponding diagram
 Throughout this Task.Delay represents any asynchronous operation 
 
 Exercise 1 - Baseline
-     - View the Output Window
   Console Application - AsyncAwait_A(true)
-     - Different thread on the continuations because SynchronizationContext.Current == null
+     - Different thread on the continuations because SynchronizationContext.Current == null and thread 1 is stuck at .Wait()
      - All three ThreadLocals loose their value on the new thread
      - AsyncLocal correctly retains its value following the logical execution
+	 - Culture code is correctly changed on each continuation
    WPF Application - AsyncAwait_A(true)
      - Same thread on the continuations because SynchronizationContext.Current = DispatcherSynchronizationContext
-     - ThreadLocals A, B and C retain their value
-     - AsyncLocal correctly retains its value following the logical execution
+     - ThreadLocals retained on continuation
+     - AsyncLocal correctly "loses" values on continuation
+	 - Culture code is correctly changed on each continuation
      
 Exercise 2 - Task and Thread Debugger Window
    AsyncAwait_A(pause: 10000) - Pause with enough time to break
@@ -28,14 +29,13 @@ Exercise 2 - Task and Thread Debugger Window
          WPF Application 
              - Main Thread - Waiting for message - .EXE doesn't exit until told to so waiting for the next message
              - UI Thread is not blocked
-             - What happens if I hit the button multiple times? More and more tasks
              
 Exercise 3 - Don't Await AsyncAwait_A
    View Output Window
    Console Application
-      Application exits before the Task.Delay and the continuations executes.
+      Failure: Application exits before the Task.Delay and the continuations executes.
    WPF Application
-      "Appears" to work. No errors and the Task does run (see output window) because the .EXE stays running.
+      "Appears" to work. No errors and the Task does run because the .EXE stays running.
       However, notice that the Count is incremented immediately - it is not a continuation
       You will see similar behavior in ASP.NET because the ApplicationPool is still running so the Task Continuations may run
       but the request is long over.

@@ -5,11 +5,11 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfApp1"
         mc:Ignorable="d"
-        Title="MainWindow" Height="618.667" Width="800.667">
+        Title="MainWindow" Height="516.001" Width="1099.334">
     <Window.Resources>
         <Style TargetType="Button">
             <Setter Property="Margin" Value="5"></Setter>
-            <Setter Property="FontSize" Value="18"></Setter>
+            <Setter Property="FontSize" Value="12"></Setter>
             <Setter Property="Padding" Value="4"></Setter>
         </Style>
         <Style TargetType="TextBlock">
@@ -17,16 +17,18 @@
             <Setter Property="FontSize" Value="18"></Setter>
         </Style>
     </Window.Resources>
-    <Grid Margin="0, 20, 0, 0" HorizontalAlignment="Left">
+    <Grid Margin="0, 20, 0, 0">
 
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"></ColumnDefinition>
             <ColumnDefinition Width="Auto"></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
         </Grid.RowDefinitions>
 
         <TextBlock Grid.Row="0" Grid.ColumnSpan="2">Explore Async / Await</TextBlock>
@@ -57,12 +59,18 @@
             <Button x:Name="AsyncAwaitExercise17" Click="AsyncAwaitExercise17_Click">Exercise 15 - ExeuctionContextC.Run</Button>
         </StackPanel>
 
-        <StackPanel Grid.Row="2" Grid.ColumnSpan="3" HorizontalAlignment="Stretch">
+        <StackPanel Grid.Row="2" Grid.ColumnSpan="2" HorizontalAlignment="Stretch">
             <TextBlock>
                 <Run>Count: </Run>
                 <Run Text="{Binding Path=Count}"></Run>
             </TextBlock>
             <ProgressBar x:Name="pbRunning" Loaded="pbRunning_Loaded" Minimum="0" Maximum="100" Height="20"></ProgressBar>
         </StackPanel>
+        <ListBox Grid.RowSpan="4" Grid.Column="2" FontSize="20"
+                 ItemsSource="{Binding Path=Messages, Mode=OneWay}"
+                 ></ListBox>
+        <Button Grid.Row="2" Grid.Column="2" HorizontalAlignment="Right"
+                Name="btnClear"
+                Click="btnClear_Click">Clear</Button>
     </Grid>
 </Window>

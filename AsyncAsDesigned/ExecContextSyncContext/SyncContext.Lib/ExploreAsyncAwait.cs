@@ -26,7 +26,7 @@ namespace SyncContext.Lib
         public static AsyncLocal<string> asyncLocalB = new AsyncLocal<string>();
         public static AsyncLocal<string> asyncLocalC = new AsyncLocal<string>();
 
-        public static async Task AsyncAwait_A(bool continueOnCapturedSynchronizationContext = true, int pause = 1000)
+        public static async Task AsyncAwait_A(Action<string> output, bool continueOnCapturedSynchronizationContext = true, int pause = 1000)
         {
             // Logical Execution 1
 
@@ -36,41 +36,41 @@ namespace SyncContext.Lib
 
             Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("fr-FR");
             threadLocalA.Value = "A"; asyncLocalA.Value = "A";
-            LogicalExecution(1);
+            LogicalExecution(1, output);
 
             // equivalent to await AsyncAwait_B(continueOnCapturedSynchronizationContext, pause);
             // you normally don't need to interact with the created task
-            await AsyncAwait_B(continueOnCapturedSynchronizationContext, pause).ConfigureAwait(continueOnCapturedContext: continueOnCapturedSynchronizationContext); // Location Execution 2
+            await AsyncAwait_B(output, continueOnCapturedSynchronizationContext, pause).ConfigureAwait(continueOnCapturedContext: continueOnCapturedSynchronizationContext); // Location Execution 2
 
             // Logical Execution 9
-            LogicalExecution(9);
+            LogicalExecution(9, output);
 
             // Point: Why do asyncLocalB and asyncLocalC not have a value?? AsyncLocalA does.
 
         }
 
-        private static async Task AsyncAwait_B(bool continueOnCapturedSynchronizationContext, int pause = 1000)
+        private static async Task AsyncAwait_B(Action<string> output, bool continueOnCapturedSynchronizationContext, int pause = 1000)
         {
 
             // Logical Execution 3
             Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
             threadLocalB.Value = "B"; asyncLocalB.Value = "B";
-            LogicalExecution(3);
+            LogicalExecution(3, output);
 
-            await AsyncAwait_C(continueOnCapturedSynchronizationContext, pause).ConfigureAwait(continueOnCapturedContext: continueOnCapturedSynchronizationContext); // Location Execution 4
+            await AsyncAwait_C(output, continueOnCapturedSynchronizationContext, pause).ConfigureAwait(continueOnCapturedContext: continueOnCapturedSynchronizationContext); // Location Execution 4
 
             // Logical Execution 8
-            LogicalExecution(8);
+            LogicalExecution(8, output);
 
         }
 
-        private static async Task AsyncAwait_C(bool continueOnCapturedSynchronizationContext, int pause = 1000)
+        private static async Task AsyncAwait_C(Action<string> output, bool continueOnCapturedSynchronizationContext, int pause = 1000)
         {
 
             // Logical Execution 5
             Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("es-MX");
             threadLocalC.Value = "C"; asyncLocalC.Value = "C";
-            LogicalExecution(5);
+            LogicalExecution(5, output);
 
 
             // Break during Delay
@@ -80,7 +80,7 @@ namespace SyncContext.Lib
             await Task.Delay(millisecondsDelay: pause).ConfigureAwait(continueOnCapturedContext: continueOnCapturedSynchronizationContext); // Location Execution 6
 
             // Logical Execution 7
-            LogicalExecution(7);
+            LogicalExecution(7, output);
 
             // Point: In WPF with ConfigureAwait(true) ThreadLocal has all the values (ABC)
 
@@ -96,10 +96,10 @@ namespace SyncContext.Lib
             await Task.FromResult<int>(1);
         }
 
-        public static void LogicalExecution(int logicalExecutionPoint)
+        public static void LogicalExecution(int logicalExecutionPoint, Action<string> output)
         {
-            Debug.WriteLine($"Logical Execution {logicalExecutionPoint}: ThreadID {System.Threading.Thread.CurrentThread.ManagedThreadId} ThreadLocal {threadLocalA.Value}{threadLocalB.Value}{threadLocalC.Value} AsyncLocal: {asyncLocalA.Value}{asyncLocalB.Value}{asyncLocalC.Value} Culture-Code : {Thread.CurrentThread.CurrentCulture.ToString()}");
+            output($"Logical Execution {logicalExecutionPoint}: ThreadID {System.Threading.Thread.CurrentThread.ManagedThreadId} ThreadLocal {threadLocalA.Value}{threadLocalB.Value}{threadLocalC.Value} AsyncLocal: {asyncLocalA.Value}{asyncLocalB.Value}{asyncLocalC.Value} Culture-Code : {Thread.CurrentThread.CurrentCulture.ToString()}");
         }
 
-   }
+    }
 }
