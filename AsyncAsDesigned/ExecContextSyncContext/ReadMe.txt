@@ -17,10 +17,15 @@ Exercise 1 - Baseline
 	 - Culture code is correctly changed on each continuation
 
 Exercise 1.B - ExecutionContext.SupressFlow
-  Both - CultureCode and AsyncLocal broken!!
+  Both CultureCode and AsyncLocal are not flowed; this is a huge issue!!
+  Never ever do this!
 
 Exercise 1.C - SychronizationContext == null
-  WPF Application - Broken; Trying to execution 
+  Note: Continues on a different thread. ThreadLocal is empty.
+  This how MsTest, Console Application, ASP.NET Core and more run
+  Libraries shared between those platforms and WPF/FORMS/UWP will behave differently
+  because of this unless all 'await's have a corresponding '.ConfigureAwait(false)'
+  This is as designed.	
 
 Exercise 2 - Task and Thread Debugger Window
    AsyncAwait_A(pause: 10000) - Pause with enough time to break
@@ -75,9 +80,10 @@ Exercise 7 = .Wait() with ConfigureAwait(false)
      ThreadLocal information is gone however AsyncLocal is in tact
     This is why it is recommended to have ConfigureAwait(false) in all libraries - To keep this option available
       
-Exercise 8 - SynchronizationContext.Current = Null
-    Though it can cause DeadLocks this shows that DispaterSynchronizationContext is important. 
-    Without it application doesn't continue on the UI Thread causing an exception when we hit data binding.
+Exercise 8 - .Wait() with SynchronizationContext.Current = Null
+	No Deadlock
+	However, we don't continue on the UI thread so there's no protection
+	This shows that DispaterSynchronizationContext is important. 
     This is why ConfigureAwait(false) was provided in the design.
     
 Exercise 9 - - .Wait() fix -> ContinueWith

@@ -13,11 +13,8 @@ namespace AsyncAsDesigned.PerfAppServer
 
         static async Task Main(string[] args)
         {
-            var t = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
 
-
-
-            if (!(1, 2, 3, 4, 5).Contains(args.Length))
+            if (!(3, 4).Contains(args.Length))
             {
                 throw new Exception("Invalid number of command line arguments");
             }

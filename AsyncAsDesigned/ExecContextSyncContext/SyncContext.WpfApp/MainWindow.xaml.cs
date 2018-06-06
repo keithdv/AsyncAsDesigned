@@ -1,6 +1,7 @@
 ﻿using SyncContext.Lib;
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -32,12 +33,13 @@ namespace WpfApp1
             this.DataContext = this;
             Messages = new ObservableCollection<string>();
 
-            ExploreAsyncAwait.output = Output;
             context = SynchronizationContext.Current;
+            ExploreAsyncAwait.output = s => Output(s);
 
+            this.SizeToContent = SizeToContent.WidthAndHeight;
         }
 
-        static SynchronizationContext context;
+        readonly SynchronizationContext context;
 
         public ObservableCollection<string> Messages
         {
@@ -49,6 +51,45 @@ namespace WpfApp1
         public static readonly DependencyProperty MessagesProperty =
             DependencyProperty.Register("Messages", typeof(ObservableCollection<string>), typeof(MainWindow), new PropertyMetadata(null));
 
+        // Add messages while not on the UI Thread
+        readonly ConcurrentQueue<string> _backLogMessages = new ConcurrentQueue<string>();
+
+
+        public bool IsExpanded
+        {
+            get { return (bool)GetValue(IsExpandedProperty); }
+            set { SetValue(IsExpandedProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for IsExpanded.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty IsExpandedProperty =
+            DependencyProperty.Register("IsExpanded", typeof(bool), typeof(MainWindow), new PropertyMetadata(true, OnPropertyChanged));
+
+        public static void OnPropertyChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
+        {
+            var mw = (MainWindow)sender;
+            if ((bool)e.NewValue)
+            {
+                mw.ListFontSize = 14;
+            }
+            else
+            {
+                mw.ListFontSize = 24;
+            }
+        }
+
+
+
+
+        public int ListFontSize
+        {
+            get { return (int)GetValue(ListFontSizeProperty); }
+            set { SetValue(ListFontSizeProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for ListFontSize.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty ListFontSizeProperty =
+            DependencyProperty.Register("ListFontSize", typeof(int), typeof(MainWindow), new PropertyMetadata(14));
 
 
         private int progress = 0;
@@ -62,6 +103,12 @@ namespace WpfApp1
             {
                 progress = (progress + 1) % 100;
                 pbRunning.Value = progress;
+
+                while (_backLogMessages.TryDequeue(out string result))
+                {
+                    Messages.Add(result);
+                }
+
                 await Task.Delay(250);
             }
 
@@ -76,12 +123,17 @@ namespace WpfApp1
 
             await SyncContext.Lib.ExploreAsyncAwait.AsyncAwait_A();
 
+            // DispatcherSynchronizationContext is the reason this doesn't error
+            // Ensures this runs on the UI thread
+            Messages.Add("Exercise 1 Continuation");
+
             Output("Exercise 1 Done");
         }
 
         public async void AsyncAwaitExercise1b_Click(object sender, RoutedEventArgs e)
         {
             Output("Exercise 1b Start");
+
             ExecutionContext.SuppressFlow();
             await SyncContext.Lib.ExploreAsyncAwait.AsyncAwait_A();
 
@@ -91,13 +143,20 @@ namespace WpfApp1
         public async void AsyncAwaitExercise1c_Click(object sender, RoutedEventArgs e)
         {
             Output("Exercise 1c Start");
+
+            // This how MsTest, Console Application, ASP.NET Core and more run
+            // Libraries shared between those platforms and WPF/FORMS/UWP will behave differently
+
             SynchronizationContext.SetSynchronizationContext(null);
 
             await SyncContext.Lib.ExploreAsyncAwait.AsyncAwait_A();
 
-            // Messages.Add("Causes an Error because we're not on the UI thread");
-
             SynchronizationContext.SetSynchronizationContext(context);
+
+            // Note: Not on the UI thread
+            // Any interaction with the UI thread like this will cause an error
+            // This is why .ConfigureAwait(false) is the answer not setting the static SynchronizationContext.Current to null
+            Messages.Add("Error!");
 
             Output("Exercise 1c Done");
         }
@@ -179,17 +238,18 @@ namespace WpfApp1
 
             // Exercise 6 - .Wait() w/ Default of ConfigureAwait(true)
             // Deadlock!!
-            SyncContext.Lib.ExploreAsyncAwait.AsyncAwait_A().Wait();
+            if (!SyncContext.Lib.ExploreAsyncAwait.AsyncAwait_A(pause: 500).Wait(5000))
+            {
+                throw new Exception("Deadlock!!");
+            }
+
+            Output("Exercise 6 Done");
 
         }
 
         public void AsyncAwaitExercise7_Click(object sender, RoutedEventArgs e)
         {
             Output("Exercise 7");
-
-            var messages = new List<string>();
-
-            ExploreAsyncAwait.output = s => messages.Add(s);
 
             // Exercise 7 - .Wait() with ConfigureAwait(false)
             // Deadlock resolved the correct way using ConfigureAwait(false)
@@ -198,31 +258,27 @@ namespace WpfApp1
             ExploreAsyncAwait.AsyncAwait_A(continueOnCapturedSynchronizationContext: false, pause: 5000)
                 .Wait();
 
-            messages.ForEach(s => Messages.Add(s));
-
-            Output("Exercise 7 Done");
-
-            ExploreAsyncAwait.output = Output;
+            Messages.Add("Exercise 7 Done");
 
         }
 
-        public async void AsyncAwaitExercise8_Click(object sender, RoutedEventArgs e)
+        public void AsyncAwaitExercise8_Click(object sender, RoutedEventArgs e)
         {
             Output("Exercise 8");
 
             // Exercise 8 - SynchronizationContext.Current = Null
-            // Though it can cause DeadLocks this shows that DispaterSynchronizationContext is important
+            // Same as ConfigureAwait(false) in Exercise 7
+            // But brittle because SynchronizationContext.Current is static so you'll have unexpected behavior in other threads
 
             SynchronizationContext.SetSynchronizationContext(null);
-            var messages = new List<string>();
 
-            // Exercise 7 - .Wait() with ConfigureAwait(false)
-            // Deadlock resolved the correct way.
-            // UI Thread Blocked 
-            // Note output window - Different thread completes the task (Logical Execution 7+) that the main thread is waiting for to complete alleviating the deadlock
-            await SyncContext.Lib.ExploreAsyncAwait.AsyncAwait_A(continueOnCapturedSynchronizationContext: false, pause: 5000);
+            SyncContext.Lib.ExploreAsyncAwait.AsyncAwait_A(pause: 3000).Wait();
 
-            messages.ForEach(s => Messages.Add(s));
+            // UI Thread
+            // No Await so SynchronizationContext doesn't come into play
+            Output("Exercise 8 Continuation");
+
+            SynchronizationContext.SetSynchronizationContext(context);
 
             Output("Exercise 8 Done");
 
@@ -296,9 +352,13 @@ namespace WpfApp1
 
         private Task lastTask = Task.CompletedTask;
 
+        private int count = 0;
         public async void AsyncAwaitExercise11_Click(object sender, RoutedEventArgs e)
         {
-            Output("Exercise 11");
+
+            var run = count; count++;
+
+            Output($"Exercise 11 Run # {run}");
 
             // Exercise 11 - Task Queue
 
@@ -315,23 +375,26 @@ namespace WpfApp1
             // Allow the next task to Execute
             taskCompletionSource.SetResult(null);
 
-            Output("Exercise 11 Done");
+            Output($"Exercise 11 Done #{run}");
 
         }
 
         public async void AsyncAwaitExercise12_Click(object sender, RoutedEventArgs e)
         {
-            Output("Exercise 12");
+            var myCount = count; count++;
+
+            Output($"Exercise 12 #{myCount}");
 
             // Seperate out the TaskQueue logic from the business logic (Count = Count + 1)
 
             await TaskQueue(async (c) =>
             {
                 await Task.Delay(1000, c);
-                Output("Exercise 12 Done");
+                Output($"Exercise 12 #{myCount} Done");
             });
         }
 
+        // Shows how TAP was meant for you to write generic Task logic to work for whatever delegate within the task
         private async Task TaskQueue(Func<CancellationToken, Task> func)
         {
 
@@ -557,14 +620,31 @@ namespace WpfApp1
 
         private void Output(string message)
         {
-            // Use DispatcherSynchronizationContext.Post for a coule of exercises
-            // where SynchronizationContext.Current is set to null
-            context.Post(o => Messages.Add(message), null);
+
+            var id = System.Threading.Thread.CurrentThread.ManagedThreadId;
+
+            if (id != 1)
+            {
+                // Use DispatcherSynchronizationContext.Post for a coule of exercises
+                // where SynchronizationContext.Current is set to null
+                _backLogMessages.Enqueue($"ThreadID {System.Threading.Thread.CurrentThread.ManagedThreadId} {message}");
+            }
+            else
+            {
+                // Show in the correct order - Make it a little more clear
+                while (_backLogMessages.TryDequeue(out string result))
+                {
+                    Messages.Add(result);
+                }
+
+                Messages.Add($"UI Thread {message}");
+            }
+
         }
 
         public void btnClear_Click(object sender, RoutedEventArgs e)
         {
-            context.Post(o => Messages.Clear(), null);
+            Messages.Clear();
         }
     }
 }

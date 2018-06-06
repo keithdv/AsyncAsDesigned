@@ -96,13 +96,12 @@ namespace SyncContext.Lib
 
         public static async Task<int> ThrowException()
         {
-            throw new Exception("Failure!");
-            await Task.FromResult<int>(1);
+            throw new Exception("Exercise 4 Failure!");
         }
 
         public static void Log(int logicalExecutionPoint, Action<string> output)
         {
-            output($"Logical Execution {logicalExecutionPoint}: ThreadID {System.Threading.Thread.CurrentThread.ManagedThreadId} ThreadLocal {threadLocalA.Value}{threadLocalB.Value}{threadLocalC.Value} AsyncLocal: {asyncLocalA.Value}{asyncLocalB.Value}{asyncLocalC.Value} Culture-Code : {Thread.CurrentThread.CurrentCulture.ToString()}");
+            output($"Logical Execution {logicalExecutionPoint}: ThreadLocal {threadLocalA.Value}{threadLocalB.Value}{threadLocalC.Value} AsyncLocal: {asyncLocalA.Value}{asyncLocalB.Value}{asyncLocalC.Value} Culture-Code : {Thread.CurrentThread.CurrentCulture.ToString()}");
         }
 
     }
