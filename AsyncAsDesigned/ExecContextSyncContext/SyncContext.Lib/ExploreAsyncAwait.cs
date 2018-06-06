@@ -13,6 +13,9 @@ namespace SyncContext.Lib
     public static class ExploreAsyncAwait
     {
 
+        // allow the Console application and the WPF to log differently
+        public static Action<string> output;
+
         // Capture ExecutionContextC so the we are able to use it in ExecutionContext.Run to
         // observe the behavior of the three AsyncLocals
         public static ExecutionContext executionContextC_Capture;
@@ -26,7 +29,7 @@ namespace SyncContext.Lib
         public static AsyncLocal<string> asyncLocalB = new AsyncLocal<string>();
         public static AsyncLocal<string> asyncLocalC = new AsyncLocal<string>();
 
-        public static async Task AsyncAwait_A(Action<string> output, bool continueOnCapturedSynchronizationContext = true, int pause = 1000)
+        public static async Task AsyncAwait_A(bool continueOnCapturedSynchronizationContext = true, int pause = 1000)
         {
             // Logical Execution 1
 
@@ -34,43 +37,44 @@ namespace SyncContext.Lib
             // Very very dangerous!!!
             // ExecutionContext.SuppressFlow();
 
+            // Change values that are stored within the containers within ExecutionContext
             Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("fr-FR");
             threadLocalA.Value = "A"; asyncLocalA.Value = "A";
-            LogicalExecution(1, output);
+            Log(1, output);
 
-            // equivalent to await AsyncAwait_B(continueOnCapturedSynchronizationContext, pause);
-            // you normally don't need to interact with the created task
-            await AsyncAwait_B(output, continueOnCapturedSynchronizationContext, pause).ConfigureAwait(continueOnCapturedContext: continueOnCapturedSynchronizationContext); // Location Execution 2
+            await AsyncAwait_B(continueOnCapturedSynchronizationContext, pause).ConfigureAwait(continueOnCapturedContext: continueOnCapturedSynchronizationContext); // Location Execution 2
 
             // Logical Execution 9
-            LogicalExecution(9, output);
+            Log(9, output);
 
             // Point: Why do asyncLocalB and asyncLocalC not have a value?? AsyncLocalA does.
 
         }
 
-        private static async Task AsyncAwait_B(Action<string> output, bool continueOnCapturedSynchronizationContext, int pause = 1000)
+        private static async Task AsyncAwait_B(bool continueOnCapturedSynchronizationContext, int pause = 1000)
         {
 
             // Logical Execution 3
+            // Change values that are stored within the containers within ExecutionContext
             Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
             threadLocalB.Value = "B"; asyncLocalB.Value = "B";
-            LogicalExecution(3, output);
+            Log(3, output);
 
-            await AsyncAwait_C(output, continueOnCapturedSynchronizationContext, pause).ConfigureAwait(continueOnCapturedContext: continueOnCapturedSynchronizationContext); // Location Execution 4
+            await AsyncAwait_C(continueOnCapturedSynchronizationContext, pause).ConfigureAwait(continueOnCapturedContext: continueOnCapturedSynchronizationContext); // Location Execution 4
 
             // Logical Execution 8
-            LogicalExecution(8, output);
+            Log(8, output);
 
         }
 
-        private static async Task AsyncAwait_C(Action<string> output, bool continueOnCapturedSynchronizationContext, int pause = 1000)
+        private static async Task AsyncAwait_C(bool continueOnCapturedSynchronizationContext, int pause = 1000)
         {
 
             // Logical Execution 5
+            // Change values that are stored within the containers within ExecutionContext
             Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("es-MX");
             threadLocalC.Value = "C"; asyncLocalC.Value = "C";
-            LogicalExecution(5, output);
+            Log(5, output);
 
             output("Task.Delay");
             // Break during Delay
@@ -80,7 +84,7 @@ namespace SyncContext.Lib
             await Task.Delay(millisecondsDelay: pause).ConfigureAwait(continueOnCapturedContext: continueOnCapturedSynchronizationContext); // Location Execution 6
 
             // Logical Execution 7
-            LogicalExecution(7, output);
+            Log(7, output);
 
             // Point: In WPF with ConfigureAwait(true) ThreadLocal has all the values (ABC)
 
@@ -96,7 +100,7 @@ namespace SyncContext.Lib
             await Task.FromResult<int>(1);
         }
 
-        public static void LogicalExecution(int logicalExecutionPoint, Action<string> output)
+        public static void Log(int logicalExecutionPoint, Action<string> output)
         {
             output($"Logical Execution {logicalExecutionPoint}: ThreadID {System.Threading.Thread.CurrentThread.ManagedThreadId} ThreadLocal {threadLocalA.Value}{threadLocalB.Value}{threadLocalC.Value} AsyncLocal: {asyncLocalA.Value}{asyncLocalB.Value}{asyncLocalC.Value} Culture-Code : {Thread.CurrentThread.CurrentCulture.ToString()}");
         }

@@ -1,5 +1,6 @@
 ﻿using SyncContext.Lib;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -30,17 +31,13 @@ namespace WpfApp1
             InitializeComponent();
             this.DataContext = this;
             Messages = new ObservableCollection<string>();
+
+            ExploreAsyncAwait.output = Output;
+            context = SynchronizationContext.Current;
+
         }
 
-        public int Count
-        {
-            get { return (int)GetValue(CountProperty); }
-            set { SetValue(CountProperty, value); }
-        }
-
-        // Using a DependencyProperty as the backing store for Count.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty CountProperty =
-            DependencyProperty.Register("Count", typeof(int), typeof(MainWindow), new PropertyMetadata(0));
+        static SynchronizationContext context;
 
         public ObservableCollection<string> Messages
         {
@@ -53,9 +50,12 @@ namespace WpfApp1
             DependencyProperty.Register("Messages", typeof(ObservableCollection<string>), typeof(MainWindow), new PropertyMetadata(null));
 
 
+
         private int progress = 0;
         public async void pbRunning_Loaded(object sender, RoutedEventArgs e)
         {
+            var method = Type.GetType("System.Threading.Tasks.ThreadPoolTaskScheduler").GetMethod("GetScheduledTasks", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+
             await Task.Delay(250);
 
             while (true)
@@ -72,25 +72,48 @@ namespace WpfApp1
 
         public async void AsyncAwaitExercise1_Click(object sender, RoutedEventArgs e)
         {
-            Output("Exercise 1");
+            Output("Exercise 1 Start");
 
-            await SyncContext.Lib.ExploreAsyncAwait.AsyncAwait_A(output: Output);
-
-            Count = Count + 1;
+            await SyncContext.Lib.ExploreAsyncAwait.AsyncAwait_A();
 
             Output("Exercise 1 Done");
         }
 
+        public async void AsyncAwaitExercise1b_Click(object sender, RoutedEventArgs e)
+        {
+            Output("Exercise 1b Start");
+            ExecutionContext.SuppressFlow();
+            await SyncContext.Lib.ExploreAsyncAwait.AsyncAwait_A();
+
+            Output("Exercise 1b Done");
+        }
+
+        public async void AsyncAwaitExercise1c_Click(object sender, RoutedEventArgs e)
+        {
+            Output("Exercise 1c Start");
+            SynchronizationContext.SetSynchronizationContext(null);
+
+            await SyncContext.Lib.ExploreAsyncAwait.AsyncAwait_A();
+
+            // Messages.Add("Causes an Error because we're not on the UI thread");
+
+            SynchronizationContext.SetSynchronizationContext(context);
+
+            Output("Exercise 1c Done");
+        }
+
+
         public async void AsyncAwaitExercise2_Click(object sender, RoutedEventArgs e)
         {
-            Output("Exercise 2");
+            Output("Exercise 2 Start");
 
             // During Time.Delay break the application
             // View the Task Debug Window
             // View the thread window - Where is the Main Thread? Answer: Waiting for more messages
-            await SyncContext.Lib.ExploreAsyncAwait.AsyncAwait_A(output: Output, pause: 10000);
+            await SyncContext.Lib.ExploreAsyncAwait.AsyncAwait_A(pause: 10000);
 
-            Count = Count + 1;
+            Output("Exercise 2 End");
+
         }
 
         public void AsyncAwaitExercise3_Click(object sender, RoutedEventArgs e)
@@ -100,10 +123,10 @@ namespace WpfApp1
             // Exercise 3 - Don't Await
             // Appears to "Work"
             // Don't ignore warning!
-            SyncContext.Lib.ExploreAsyncAwait.AsyncAwait_A(Output);
+            SyncContext.Lib.ExploreAsyncAwait.AsyncAwait_A();
 
             Output("Exercise 3 Done.");
-            Count = Count + 1;
+
         }
 
         public void AsyncAwaitExercise4_Click(object sender, RoutedEventArgs e)
@@ -113,7 +136,7 @@ namespace WpfApp1
             // Exercise 4 - Don't Await - Throw Exception
             SyncContext.Lib.ExploreAsyncAwait.ThrowException();
 
-            Count = Count + 1;
+            Output("Exercise 4 Done");
         }
 
 
@@ -146,7 +169,7 @@ namespace WpfApp1
             }
             catch (Exception e1) { }
 
-            Count = Count + 1;
+            Output("Exercise 5 Done");
 
         }
 
@@ -156,10 +179,8 @@ namespace WpfApp1
 
             // Exercise 6 - .Wait() w/ Default of ConfigureAwait(true)
             // Deadlock!!
-            SyncContext.Lib.ExploreAsyncAwait.AsyncAwait_A(Output).Wait();
+            SyncContext.Lib.ExploreAsyncAwait.AsyncAwait_A().Wait();
 
-
-            Count = Count + 1;
         }
 
         public void AsyncAwaitExercise7_Click(object sender, RoutedEventArgs e)
@@ -168,22 +189,26 @@ namespace WpfApp1
 
             var messages = new List<string>();
 
+            ExploreAsyncAwait.output = s => messages.Add(s);
+
             // Exercise 7 - .Wait() with ConfigureAwait(false)
-            // Deadlock resolved the correct way.
+            // Deadlock resolved the correct way using ConfigureAwait(false)
             // UI Thread Blocked 
-            // Note output window - Different thread completes the task (Logical Execution 7+) that the main thread is waiting for to complete alleviating the deadlock
-            SyncContext.Lib.ExploreAsyncAwait.AsyncAwait_A(output: (s) => messages.Add(s), continueOnCapturedSynchronizationContext: false, pause: 3000).Wait();
+            // Note the log - Different thread completes the task (Logical Execution 7+) that the main thread is waiting for to complete alleviating the deadlock
+            ExploreAsyncAwait.AsyncAwait_A(continueOnCapturedSynchronizationContext: false, pause: 5000)
+                .Wait();
 
             messages.ForEach(s => Messages.Add(s));
-            Count = Count + 1;
 
             Output("Exercise 7 Done");
+
+            ExploreAsyncAwait.output = Output;
+
         }
 
         public async void AsyncAwaitExercise8_Click(object sender, RoutedEventArgs e)
         {
             Output("Exercise 8");
-
 
             // Exercise 8 - SynchronizationContext.Current = Null
             // Though it can cause DeadLocks this shows that DispaterSynchronizationContext is important
@@ -195,11 +220,11 @@ namespace WpfApp1
             // Deadlock resolved the correct way.
             // UI Thread Blocked 
             // Note output window - Different thread completes the task (Logical Execution 7+) that the main thread is waiting for to complete alleviating the deadlock
-            await SyncContext.Lib.ExploreAsyncAwait.AsyncAwait_A(output: (s) => messages.Add(s), continueOnCapturedSynchronizationContext: false, pause: 5000);
+            await SyncContext.Lib.ExploreAsyncAwait.AsyncAwait_A(continueOnCapturedSynchronizationContext: false, pause: 5000);
 
-            messages.ForEach(s => Debug.WriteLine(s));
+            messages.ForEach(s => Messages.Add(s));
 
-            Count = Count + 1;
+            Output("Exercise 8 Done");
 
         }
 
@@ -212,10 +237,10 @@ namespace WpfApp1
             // Task Continuation
             // UI Thread isn't blocked
             // But if it's this easy just add async void to the button click handler
-            SyncContext.Lib.ExploreAsyncAwait.AsyncAwait_A(output: Output, pause: 10).ContinueWith(x =>
+            SyncContext.Lib.ExploreAsyncAwait.AsyncAwait_A(pause: 10).ContinueWith(x =>
              {
                  if (x.Exception != null) { throw x.Exception; } // Be careful not to loose the exception. It's your responsibility!
-                 Count = Count + 1;
+                 Output("Exercise 9 Continuation");
              });
 
             Output("Exercise 9 Done");
@@ -231,7 +256,6 @@ namespace WpfApp1
             // In a nested method adding async void isn't the right
 
             NestedBusinessLogicMethod(); // I want this to finish before moving on
-            Count = Count + 1;
 
             Output("Exercise 10 Done");
 
@@ -245,12 +269,10 @@ namespace WpfApp1
             Func<Task> asyncLamda = async () =>
             {
                 await Task.Delay(3000); // Main thread is already blocked
-                await SyncContext.Lib.ExploreAsyncAwait.AsyncAwait_A(output: Output, pause: 3000);
+                await SyncContext.Lib.ExploreAsyncAwait.AsyncAwait_A(pause: 3000);
 
                 // This causes an error because we are not running on the UI thread
-                // SynchronizationContext.Current = null
-                // Main Thread is blocked
-                // Count = Count + 1;
+                // But the main thread is blocked
             };
 
             // What is this accomplishing??
@@ -290,12 +312,11 @@ namespace WpfApp1
 
             await Task.Delay(1000);
 
-            Count = Count + 1;
-
             // Allow the next task to Execute
             taskCompletionSource.SetResult(null);
 
             Output("Exercise 11 Done");
+
         }
 
         public async void AsyncAwaitExercise12_Click(object sender, RoutedEventArgs e)
@@ -307,10 +328,8 @@ namespace WpfApp1
             await TaskQueue(async (c) =>
             {
                 await Task.Delay(1000, c);
-                Count = Count + 1;
+                Output("Exercise 12 Done");
             });
-
-            Output("Exercise 12 Done");
         }
 
         private async Task TaskQueue(Func<CancellationToken, Task> func)
@@ -366,19 +385,20 @@ namespace WpfApp1
 
             await initAsync.DoWork();
 
-            Count = Count + 1;
+            Output("Exercise 13...");
 
             // Notice the second time we call we don't 
             // execute the Task.Delay
             await initAsync.DoWork();
 
-            Count = Count + 1;
+            Output("Exercise 13 Done");
         }
 
 
         public async void AsyncAwaitExercise14_Click(object sender, RoutedEventArgs e)
         {
             Output("Exercise 14");
+
             Task[] someTasks = new Task[3];
 
             someTasks[0] = Task.Delay(2000);
@@ -386,14 +406,16 @@ namespace WpfApp1
             someTasks[2] = Task.Delay(2000);
 
             // Takes 2 seconds not 6
-            await Task.WhenAll(someTasks);
+            var t = Task.WhenAll(someTasks);
+
+
+            await t;
             Output("Exercise 14 Done");
+
         }
 
         public async void AsyncAwaitExercise15_Click(object sender, RoutedEventArgs e)
         {
-            Output("Exercise 15 Start");
-
             /*
              * Exercise 15 - Task.WhenAll under control
              * Likely it's a bad idea to create too many tasks - both for client and server
@@ -403,7 +425,7 @@ namespace WpfApp1
              */
 
             List<Task> tasks = new List<Task>();
-            
+
             for (var i = 0; i < 101; i++)
             {
                 tasks.Add(Task.Delay(100));
@@ -419,7 +441,6 @@ namespace WpfApp1
             // Important but easy to forget
             await Task.WhenAll(tasks);
 
-            Output("Exercise 15 End");
         }
         /*
          * 
@@ -500,7 +521,7 @@ namespace WpfApp1
             {
                 // We are NOT on the UI thread. SynchronizationContext.Current is null
                 Debug.WriteLine($"ThreadID: {Thread.CurrentThread.ManagedThreadId} SynchoronizationContext == null: {(SynchronizationContext.Current == null)}");
-                await ExploreAsyncAwait.AsyncAwait_A(Output);
+                await ExploreAsyncAwait.AsyncAwait_A();
 
                 TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
 
@@ -515,9 +536,9 @@ namespace WpfApp1
                     ExecutionContext.Run(ExploreAsyncAwait.executionContextC_Capture, (eo) =>
                     {
                         // AsyncLocal now has the same values as AsyncAwait_C
-                        ExploreAsyncAwait.LogicalExecution(11, Output);
+                        ExploreAsyncAwait.Log(11, Output);
                         // And safely interact with UI controls
-                        Count = Count + 1;
+                        Output("Exercise 17...");
                     }, null);
 
                     taskCompletionSource.SetResult(null);
@@ -536,13 +557,14 @@ namespace WpfApp1
 
         private void Output(string message)
         {
-            Debug.WriteLine(message);
-            Messages.Add(message);
+            // Use DispatcherSynchronizationContext.Post for a coule of exercises
+            // where SynchronizationContext.Current is set to null
+            context.Post(o => Messages.Add(message), null);
         }
 
         public void btnClear_Click(object sender, RoutedEventArgs e)
         {
-            Messages.Clear();
+            context.Post(o => Messages.Clear(), null);
         }
     }
 }

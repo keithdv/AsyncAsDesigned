@@ -35,6 +35,8 @@
 
         <StackPanel Grid.Row="1" Grid.Column="0">
             <Button x:Name="AsyncAwaitExercise1" Click="AsyncAwaitExercise1_Click">Exercise 1 - Baseline</Button>
+            <Button x:Name="AsyncAwaitExercise1b" Click="AsyncAwaitExercise1b_Click">Exercise 1.B - ExecutionContext.SuppressFlow</Button>
+            <Button x:Name="AsyncAwaitExercise1c" Click="AsyncAwaitExercise1c_Click">Exercise 1.C - SynchronizationContext == null</Button>
             <Button x:Name="AsyncAwaitExercise2" Click="AsyncAwaitExercise2_Click">Exercise 2 - Task Debug Window</Button>
             <Button x:Name="AsyncAwaitExercise3" Click="AsyncAwaitExercise3_Click">Exercise 3 - Don't Await</Button>
             <Button x:Name="AsyncAwaitExercise4" Click="AsyncAwaitExercise4_Click">Exercise 4 - Don't Await - Throw Exception</Button>
@@ -60,10 +62,6 @@
         </StackPanel>
 
         <StackPanel Grid.Row="2" Grid.ColumnSpan="2" HorizontalAlignment="Stretch">
-            <TextBlock>
-                <Run>Count: </Run>
-                <Run Text="{Binding Path=Count}"></Run>
-            </TextBlock>
             <ProgressBar x:Name="pbRunning" Loaded="pbRunning_Loaded" Minimum="0" Maximum="100" Height="20"></ProgressBar>
         </StackPanel>
 

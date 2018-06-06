@@ -6,7 +6,7 @@ Throughout this Task.Delay represents any asynchronous operation
 
 Exercise 1 - Baseline
   Console Application - AsyncAwait_A(true)
-     - Different thread on the continuations because SynchronizationContext.Current == null and thread 1 is stuck at .Wait()
+     - Different thread on the continuations because SynchronizationContext.Current == null
      - All three ThreadLocals loose their value on the new thread
      - AsyncLocal correctly retains its value following the logical execution
 	 - Culture code is correctly changed on each continuation
@@ -15,7 +15,13 @@ Exercise 1 - Baseline
      - ThreadLocals retained on continuation
      - AsyncLocal correctly "loses" values on continuation
 	 - Culture code is correctly changed on each continuation
-     
+
+Exercise 1.B - ExecutionContext.SupressFlow
+  Both - CultureCode and AsyncLocal broken!!
+
+Exercise 1.C - SychronizationContext == null
+  WPF Application - Broken; Trying to execution 
+
 Exercise 2 - Task and Thread Debugger Window
    AsyncAwait_A(pause: 10000) - Pause with enough time to break
    Break during pause
@@ -64,7 +70,7 @@ Exercise 7 = .Wait() with ConfigureAwait(false)
     WPF Application
     Deadlock fixed. 
     UI Thread Blocked 
-    Note Output Window
+    Note the log
      Different thread completes the task (Logical Execution 7+) that the main thread is waiting for to complete alleviating the deadlock         
      ThreadLocal information is gone however AsyncLocal is in tact
     This is why it is recommended to have ConfigureAwait(false) in all libraries - To keep this option available
