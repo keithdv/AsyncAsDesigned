@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfApp1"
         mc:Ignorable="d"
-        Title="MainWindow" Height="516.001" Width="1099.334">
+        Title="MainWindow" Height="550" Width="1000">
     <Window.Resources>
         <Style TargetType="Button">
             <Setter Property="Margin" Value="5"></Setter>
@@ -21,64 +21,70 @@
 
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"></ColumnDefinition>
-            <ColumnDefinition Width="Auto"></ColumnDefinition>
             <ColumnDefinition Width="*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"></RowDefinition>
-            <RowDefinition Height="Auto"></RowDefinition>
-            <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0" Grid.ColumnSpan="2">Explore Async / Await</TextBlock>
-
-        <StackPanel Grid.Row="1" Grid.Column="0">
-            <Button x:Name="AsyncAwaitExercise1" Click="AsyncAwaitExercise1_Click">Exercise 1 - Baseline</Button>
-            <Button x:Name="AsyncAwaitExercise1b" Click="AsyncAwaitExercise1b_Click">Exercise 1.B - ExecutionContext.SuppressFlow</Button>
-            <Button x:Name="AsyncAwaitExercise1c" Click="AsyncAwaitExercise1c_Click">Exercise 1.C - SynchronizationContext == null</Button>
-            <Button x:Name="AsyncAwaitExercise2" Click="AsyncAwaitExercise2_Click">Exercise 2 - Task Debug Window</Button>
-            <Button x:Name="AsyncAwaitExercise3" Click="AsyncAwaitExercise3_Click">Exercise 3 - Don't Await</Button>
-            <Button x:Name="AsyncAwaitExercise4" Click="AsyncAwaitExercise4_Click">Exercise 4 - Don't Await - Throw Exception</Button>
-            <Button x:Name="AsyncAwaitExercise5" Click="AsyncAwaitExercise5_Click">Exercise 5 - Throw Exception - await, .Wait(), .Result</Button>
-            <Button x:Name="AsyncAwaitExercise6" Click="AsyncAwaitExercise6_Click">Exercise 6 - .Wait() with default ConfigureAwait(true)</Button>
-            <Button x:Name="AsyncAwaitExercise7" Click="AsyncAwaitExercise7_Click">Exercise 7 - .Wait() with ConfigureAwait(false)</Button>
-            <Button x:Name="AsyncAwaitExercise8" Click="AsyncAwaitExercise8_Click">Exercise 8 - Null SynchronizationContext Error</Button>
-            <Button x:Name="AsyncAwaitExercise9" Click="AsyncAwaitExercise9_Click">Exercise 9 - .Wait() fix -> ContinueWith</Button>
-            <Button x:Name="AsyncAwaitExercise10" Click="AsyncAwaitExercise10_Click">Exercise 10 - .Wait() fix -> Task.Run</Button>
-        </StackPanel>
+        <TextBlock Grid.Row="0" Grid.ColumnSpan="3">Explore Async / Await</TextBlock>
+        <Expander Grid.Row="1" IsExpanded="{Binding Path=IsExpanded}">
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"></RowDefinition>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                </Grid.RowDefinitions>
 
 
-        <StackPanel Grid.Row="1" Grid.Column="1">
-            <Button x:Name="AsyncAwaitExercise11" Click="AsyncAwaitExercise11_Click">Exercise 11 - Queue Tasks Logic</Button>
-            <Button x:Name="AsyncAwaitExercise12" Click="AsyncAwaitExercise12_Click">Exercise 12 - TaskQueue Method</Button>
-            <Button x:Name="AsyncAwaitExercise13" Click="AsyncAwaitExercise13_Click">Exercise 13 - InitializeAsync Class</Button>
-            <Button x:Name="AsyncAwaitExercise14" Click="AsyncAwaitExercise14_Click">Exercise 14 - Task.WhenAll</Button>
-            <Button x:Name="AsyncAwaitExercise15" Click="AsyncAwaitExercise15_Click">Exercise 15 - Task.WhenAll under control</Button>
-            <TextBlock>Exercise 16 Null SychContext Behavior</TextBlock>
-            <Button x:Name="NotNullSyncContext" Click="NotNullSyncContext_Click" >Dispatcher SyncContext</Button>
-            <Button x:Name="NullSyncContext" Click="NullSyncContext_Click" >Null SyncContext</Button>
-            <Button x:Name="AsyncAwaitExercise17" Click="AsyncAwaitExercise17_Click">Exercise 15 - ExeuctionContextC.Run</Button>
-        </StackPanel>
+                <StackPanel Grid.Column="0">
+                    <Button x:Name="AsyncAwaitExercise1" Click="AsyncAwaitExercise1_Click">1 - Baseline</Button>
+                    <Button x:Name="AsyncAwaitExercise1b" Click="AsyncAwaitExercise1b_Click">1.B - ExecutionContext.SuppressFlow</Button>
+                    <Button x:Name="AsyncAwaitExercise1c" Click="AsyncAwaitExercise1c_Click">1.C - SynchronizationContext == null</Button>
+                    <Button x:Name="AsyncAwaitExercise2" Click="AsyncAwaitExercise2_Click">2 - Task Debug Window</Button>
+                    <Button x:Name="AsyncAwaitExercise3" Click="AsyncAwaitExercise3_Click">3 - Don't Await</Button>
+                    <Button x:Name="AsyncAwaitExercise4" Click="AsyncAwaitExercise4_Click">4 - Don't Await - Throw Exception</Button>
+                    <Button x:Name="AsyncAwaitExercise5" Click="AsyncAwaitExercise5_Click">5 - Throw Exception - await, .Wait(), .Result</Button>
+                    <Button x:Name="AsyncAwaitExercise6" Click="AsyncAwaitExercise6_Click">6 - .Wait() w/ConfigureAwait(true)</Button>
+                    <Button x:Name="AsyncAwaitExercise7" Click="AsyncAwaitExercise7_Click">7 - .Wait() w/ConfigureAwait(false)</Button>
+                    <Button x:Name="AsyncAwaitExercise8" Click="AsyncAwaitExercise8_Click">8 - .Wait() w/Null SynchronizationContext</Button>
+                    <Button x:Name="AsyncAwaitExercise9" Click="AsyncAwaitExercise9_Click">9 - .Wait() fix -> ContinueWith</Button>
+                    <Button x:Name="AsyncAwaitExercise10" Click="AsyncAwaitExercise10_Click">10 - .Wait() fix -> Task.Run</Button>
+                </StackPanel>
 
-        <StackPanel Grid.Row="2" Grid.ColumnSpan="2" HorizontalAlignment="Stretch">
-            <ProgressBar x:Name="pbRunning" Loaded="pbRunning_Loaded" Minimum="0" Maximum="100" Height="20"></ProgressBar>
-        </StackPanel>
 
-        <GridSplitter Grid.Column="0" Grid.RowSpan="5" Width="5"
-                      VerticalAlignment="Stretch" HorizontalAlignment="Right">
+                <StackPanel Grid.Column="1">
+                    <Button x:Name="AsyncAwaitExercise11" Click="AsyncAwaitExercise11_Click">11 - Queue Tasks Logic</Button>
+                    <Button x:Name="AsyncAwaitExercise12" Click="AsyncAwaitExercise12_Click">12 - TaskQueue Method</Button>
+                    <Button x:Name="AsyncAwaitExercise13" Click="AsyncAwaitExercise13_Click">13 - InitializeAsync Class</Button>
+                    <Button x:Name="AsyncAwaitExercise14" Click="AsyncAwaitExercise14_Click">14 - Task.WhenAll</Button>
+                    <Button x:Name="AsyncAwaitExercise15" Click="AsyncAwaitExercise15_Click">15 - Task.WhenAll under control</Button>
+                    <TextBlock>16 Null SychContext Behavior</TextBlock>
+                    <Button x:Name="NotNullSyncContext" Click="NotNullSyncContext_Click" >Dispatcher SyncContext</Button>
+                    <Button x:Name="NullSyncContext" Click="NullSyncContext_Click" >Null SyncContext</Button>
+                    <Button x:Name="AsyncAwaitExercise17" Click="AsyncAwaitExercise17_Click">15 - ExeuctionContextC.Run</Button>
+                </StackPanel>
 
-        </GridSplitter>
-
-        <GridSplitter Grid.Column="1" Grid.RowSpan="5" Width="5"
-                      VerticalAlignment="Stretch" HorizontalAlignment="Right">
+                <StackPanel Grid.Row="1" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Orientation="Horizontal">
+                    <ProgressBar x:Name="pbRunning" Loaded="pbRunning_Loaded" Minimum="0" Maximum="100" Height="20" Width="500" HorizontalAlignment="Left"></ProgressBar>
+                    <Button HorizontalAlignment="Right" Name="btnClear" Click="btnClear_Click">Clear</Button>
+                </StackPanel>
+                
+            </Grid>
             
-        </GridSplitter>
-        <ListBox Grid.RowSpan="4" Grid.Column="2" FontSize="20"
+
+            
+        </Expander>
+        
+
+
+        <ListView Grid.Row="1" Grid.Column="2" FontSize="{Binding Path=ListFontSize, Mode=OneWay}"
                  ItemsSource="{Binding Path=Messages, Mode=OneWay}"
-                 ></ListBox>
-        <Button Grid.Row="2" Grid.Column="2" HorizontalAlignment="Right"
-                Name="btnClear"
-                Click="btnClear_Click">Clear</Button>
+                 MinWidth="400"
+                 ></ListView>
     </Grid>
 </Window>
