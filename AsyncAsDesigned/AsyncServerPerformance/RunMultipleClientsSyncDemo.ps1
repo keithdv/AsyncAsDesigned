@@ -20,13 +20,13 @@ Push-Location $dir
 
 #Stop-Process -Name "dotnet" -ErrorAction SilentlyContinue
 
-(startProcess -dir "AsyncAsDesigned.PerfDataServer" -cmdArgs "build", "--configuration Release").WaitForExit();
-(startProcess -dir "AsyncAsDesigned.PerfClient" -cmdArgs "build", "--configuration Release").WaitForExit();
-(startProcess -dir "AsyncAsDesigned.PerfAppServer" -cmdArgs "build", "--configuration Debug").WaitForExit();
+#(startProcess -dir "AsyncAsDesigned.PerfDataServer" -cmdArgs "build", "--configuration Release").WaitForExit();
+#(startProcess -dir "AsyncAsDesigned.PerfClient" -cmdArgs "build", "--configuration Release").WaitForExit();
+#(startProcess -dir "AsyncAsDesigned.PerfAppServer" -cmdArgs "build", "--configuration Debug").WaitForExit();
 
 
 $guid = New-Guid;
-$numClients = 5;
+$numClients = 10;
 
 For($i=1; $i -le $numClients; $i++)
 {
