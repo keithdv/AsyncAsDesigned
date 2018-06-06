@@ -8,6 +8,7 @@ namespace SyncContext.ConsoleApp
     {
         static async Task Main(string[] args)
         {
+            ExploreAsyncAwait.output = Output;
 
             Console.WriteLine("Which Exercise to run? (1 - )");
             int result;
@@ -17,16 +18,16 @@ namespace SyncContext.ConsoleApp
             {
                 case 1:
                     // Exercise 1 - Baseline
-                    await ExploreAsyncAwait.AsyncAwait_A(Output);
+                    await ExploreAsyncAwait.AsyncAwait_A();
                     break;
                 case 2:
                     // Exercise 2 - Task Debugger Window
-                    await ExploreAsyncAwait.AsyncAwait_A(output: Output, pause: 10000);
+                    await ExploreAsyncAwait.AsyncAwait_A(pause: 10000);
                     break;
                 case 3:
                     // Exercise 3 - Don't await
                     // Note the warning - Don't ignore these
-                    ExploreAsyncAwait.AsyncAwait_A(Output);
+                    ExploreAsyncAwait.AsyncAwait_A();
                     break;
                 case 4:
                     // Exercise 4 - Don't await, exception lost
@@ -35,7 +36,7 @@ namespace SyncContext.ConsoleApp
                 case 6:
                     // Exercise 4 - .Wait()
                     // Works
-                    ExploreAsyncAwait.AsyncAwait_A(output: Output, pause: 5000).Wait();
+                    ExploreAsyncAwait.AsyncAwait_A(pause: 5000).Wait();
                     break;
                 case 0:
                     break;
@@ -44,6 +45,9 @@ namespace SyncContext.ConsoleApp
                     Console.ReadKey();
                     break;
             }
+
+            Console.WriteLine("Done");
+            Console.ReadKey();
 
 
         }
