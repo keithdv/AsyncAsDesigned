@@ -76,7 +76,7 @@ namespace SyncContext.Lib
             threadLocalC.Value = "C"; asyncLocalC.Value = "C";
             Log(5, output);
 
-
+            output("Task.Delay");
             // Break during Delay
             // View Task Debugger - You can see the 3 tasks
             // View Thread Window - AsyncAwait_C().Wait() - Main Thread stuck at .Wait()
