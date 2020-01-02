@@ -23,6 +23,7 @@ namespace SyncContext.CoreMsTest
                 count++;
                 if (count == 4)
                 {
+               
                     canContinue.Set();
                 }
             }, null, 100, 100);

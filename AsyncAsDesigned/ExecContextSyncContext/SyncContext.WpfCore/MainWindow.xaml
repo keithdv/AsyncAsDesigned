@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SyncContext.WpfCore"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="800" Width="800">
     <Window.Resources>
         <Style TargetType="Button">
             <Setter Property="Margin" Value="5"></Setter>
@@ -66,7 +66,9 @@
                     <TextBlock>16 Null SychContext Behavior</TextBlock>
                     <Button x:Name="NotNullSyncContext" Click="NotNullSyncContext_Click" >Dispatcher SyncContext</Button>
                     <Button x:Name="NullSyncContext" Click="NullSyncContext_Click" >Null SyncContext</Button>
-                    <Button x:Name="AsyncAwaitExercise17" Click="AsyncAwaitExercise17_Click">15 - ExeuctionContextC.Run</Button>
+                    <Button x:Name="AsyncAwaitExercise17" Click="AsyncAwaitExercise17_Click">17 - ExeuctionContextC.Run</Button>
+                    <Button x:Name="AsyncAwaitExercise18" Click="AsyncAwaitExercise18_Click">18 - AutoResetEvent</Button>
+                    <Button x:Name="AsyncAwaitExercise19" Click="AsyncAwaitExercise19_Click">19 - TaskCompletionSource</Button>
                 </StackPanel>
 
                 <StackPanel Grid.Row="1" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Orientation="Horizontal">

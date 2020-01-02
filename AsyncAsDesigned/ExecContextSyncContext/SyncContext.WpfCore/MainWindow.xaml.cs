@@ -460,18 +460,19 @@ namespace SyncContext.WpfCore
         {
             Output("Exercise 14");
 
+            Stopwatch sw = new Stopwatch();
+
             Task[] someTasks = new Task[3];
 
             someTasks[0] = Task.Delay(2000);
             someTasks[1] = Task.Delay(2000);
             someTasks[2] = Task.Delay(2000);
 
-            // Takes 2 seconds not 6
-            var t = Task.WhenAll(someTasks);
+            sw.Restart();
+            await Task.WhenAll(someTasks);
+            sw.Stop();
 
-
-            await t;
-            Output("Exercise 14 Done");
+            Output($"Exercise 14 Done {sw.ElapsedMilliseconds} ");
 
         }
 
@@ -613,6 +614,66 @@ namespace SyncContext.WpfCore
             });
 
 
+
+        }
+
+        public void AsyncAwaitExercise18_Click(object sender, RoutedEventArgs e)
+        {
+            Output($"Exercise 18 Start");
+
+            var count = 0;
+            AutoResetEvent canContinue = new AutoResetEvent(false);
+            var sc = SynchronizationContext.Current;
+
+            Timer timer = new Timer((o) =>
+            {
+                count++;
+
+                sc.Post(p =>
+                {
+                    Output($"Exercise 18 {p}");
+                }, count);
+
+                if (count == 4)
+                {
+                    canContinue.Set();
+                }
+            }, null, 500, 500);
+
+            canContinue.WaitOne();
+            timer.Dispose();
+
+            Output($"Exercise 18 Done");
+
+        }
+
+        public async void AsyncAwaitExercise19_Click(object sender, RoutedEventArgs e)
+        {
+            Output($"Exercise 19 Start");
+
+            var count = 0;
+            TaskCompletionSource<int> taskCompletionSource = new TaskCompletionSource<int>();
+            var sc = SynchronizationContext.Current;
+
+            Timer timer = new Timer((o) =>
+            {
+                count++;
+
+                sc.Post(p =>
+                {
+                    Output($"Exercise 19 {p}");
+                }, count);
+
+                if (count == 4)
+                {
+                    taskCompletionSource.SetResult(4);
+                }
+            }, null, 500, 500);
+
+            await taskCompletionSource.Task;
+            timer.Dispose();
+
+            Output($"Exercise 19 Done");
 
         }
 

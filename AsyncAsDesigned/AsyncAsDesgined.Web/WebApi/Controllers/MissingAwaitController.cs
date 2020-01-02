@@ -15,24 +15,6 @@ namespace WebApi.Controllers
     public class MissingAwaitController : ApiController
     {
 
-
-        private async Task ExceptionAsyncMethod()
-        {
-            await Task.Delay(10);
-            throw new Exception("To Infinity..and beyond!!");
-            // Something Important is Missed 
-        }
-
-        [HttpPost]
-        [Route("NoAwait_Exception")]
-        public IHttpActionResult NoAwaitException()
-        {
-            ExceptionAsyncMethod();
-            Task.Delay(100).Wait();
-            return Ok();
-        }
-
-
         private static object CountLock = new object();
         private static int Count = 0;
 
@@ -49,12 +31,12 @@ namespace WebApi.Controllers
 
         [HttpPost]
         [Route("NoAwait_ManyTasks")]
-        public IHttpActionResult NoAwait()
+        public async Task<IHttpActionResult> NoWait()
         {
             for (var i = 0; i < 50; i++)
             {
                 Task.Delay(10).Wait();
-                ExampleAsyncMethod();
+                await ExampleAsyncMethod();
             }
             return Ok();
         }
@@ -66,7 +48,21 @@ namespace WebApi.Controllers
             return Ok(Count);
         }
 
+        private async Task ExceptionAsyncMethod()
+        {
+            await Task.Delay(10);
+            throw new Exception("To Infinity..and beyond!!");
+            // Something Important is Missed 
+        }
 
+        [HttpPost]
+        [Route("NoAwait_Exception")]
+        public async Task<IHttpActionResult> NoAwaitException()
+        {
+            await ExceptionAsyncMethod();
+            Task.Delay(100).Wait();
+            return Ok();
+        }
 
     }
 }

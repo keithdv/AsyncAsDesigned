@@ -7,8 +7,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SyncContext.ConsoleApp", "S
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SyncContext.Lib", "SyncContext.Lib\SyncContext.Lib.csproj", "{1679BD6B-330C-4545-AE24-2918C8DC2306}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SyncContext.WpfApp", "SyncContext.WpfApp\SyncContext.WpfApp.csproj", "{3B6DD954-29E9-4D8C-83B6-0195FE0BE73D}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SyncContext.CoreMsTest", "SyncContext.CoreMsTest\SyncContext.CoreMsTest.csproj", "{F088BFCA-67B3-43BE-AB8A-805DB3D152BC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{680CAA84-51FC-4590-8CC2-81DAF0C48534}"
@@ -16,7 +14,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		ReadMe.txt = ReadMe.txt
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SyncContext.WpfCore", "SyncContext.WpfCore\SyncContext.WpfCore.csproj", "{1A1388B6-EFD6-49ED-AEBE-2C2C3787D9FD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SyncContext.WpfCore", "SyncContext.WpfCore\SyncContext.WpfCore.csproj", "{1A1388B6-EFD6-49ED-AEBE-2C2C3787D9FD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,10 +30,6 @@ Global
 		{1679BD6B-330C-4545-AE24-2918C8DC2306}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1679BD6B-330C-4545-AE24-2918C8DC2306}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1679BD6B-330C-4545-AE24-2918C8DC2306}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3B6DD954-29E9-4D8C-83B6-0195FE0BE73D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3B6DD954-29E9-4D8C-83B6-0195FE0BE73D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3B6DD954-29E9-4D8C-83B6-0195FE0BE73D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3B6DD954-29E9-4D8C-83B6-0195FE0BE73D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F088BFCA-67B3-43BE-AB8A-805DB3D152BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F088BFCA-67B3-43BE-AB8A-805DB3D152BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F088BFCA-67B3-43BE-AB8A-805DB3D152BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
