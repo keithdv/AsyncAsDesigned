@@ -31,13 +31,14 @@ namespace WebApi.Controllers
 
         [HttpPost]
         [Route("NoAwait_ManyTasks")]
-        public async Task<IHttpActionResult> NoWait()
+        public IHttpActionResult NoWait()
         {
             for (var i = 0; i < 50; i++)
             {
                 Task.Delay(10).Wait();
-                await ExampleAsyncMethod();
+                ExampleAsyncMethod();
             }
+            //Task.Delay(1000).Wait();
             return Ok();
         }
 
@@ -57,12 +58,18 @@ namespace WebApi.Controllers
 
         [HttpPost]
         [Route("NoAwait_Exception")]
-        public async Task<IHttpActionResult> NoAwaitException()
+        public IHttpActionResult NoAwaitException()
         {
-            await ExceptionAsyncMethod();
-            Task.Delay(100).Wait();
+            ExceptionAsyncMethod();
+
+            // These do not fix it
+            //Task.Delay(100).Wait();
+            //await Task.Yield();
             return Ok();
         }
 
+
+        // Add wait - Count is correct
+        // Show task.Exception
     }
 }
